@@ -1,79 +1,94 @@
 import h5py 
-
-
-
-class Simulation:
-    def __init__(self, simulation_output, simulation_parameters, simulation_time):
-        self.output = simulation_output
-        self.parameters = simulation_parameters
-        self.time = simulation_time
-
-    @classmethod
-    def from_dict(self, simulation_dict):
-        return Simulation(simulation_dict['traces'], simulation_dict['parameters'], simulation_dict['time'])
-def save_simulation_runs(save_dir, data_name, run_id, simulation_ouputs:list, simulation_parameters:list, simulation_times:list, append=True):
-    for so, sp, st in zip(simulation_ouputs, simulation_parameters, simulation_times):
-        save_simulation_run(save_dir, data_name, run_id, so, sp, st, append=append)
-        append = True
-
-def save_simulation_run(save_dir, data_name, run_id, simulation_ouput, simulation_parameters, simulation_time:float, append=True):
-    """
-    save_dir : Directory in which the data will be saved
-    data_name : Name of data file the output should be saved in
-    run_id : ID of the run
-    simulation_output : Output of the simulation
-    simulation_parameters : Parameters used for the simulation
-    simulation_time : Time of the simulation
-    append : If True, the data will be appended to the file, otherwise the file will be overwritten
-    """
-    if type(run_id) != str:
-        run_id = str(run_id)
-    simulation_time = [simulation_time]
-    if append: 
-        file = h5py.File(save_dir + data_name + '.h5', 'a')
-        # We except the .h5 file to have the following groups
-        # - traces
-        # - parameters
-        # - time
-        # We will append the data to the existing file
-        file['traces'].create_dataset(run_id, data=simulation_ouput)
-        file['parameters'].create_dataset(run_id, data=simulation_parameters)
-        file['time'].create_dataset(run_id, data=simulation_time)
-
-        # Then we close the file
-        file.close()
-    else:
-        # Creat the file 
-        file = h5py.File(save_dir + data_name, "w")
-        # We create the groups
-        file.create_group('traces')
-        file.create_group('parameters')
-        file.create_group('time')
-        # We save the data
-        file['traces'].create_dataset(run_id, data=simulation_ouput)
-        file['parameters'].create_dataset(run_id, data=simulation_parameters)
-        file['time'].create_dataset(run_id, data=simulation_time)
-        # Then we close the file
-        file.close()
-
-def load_simulation_run(file, run_id):
-    """
-    Given a specific run_id this function retrievs the data from this run from the file
-    """
-    simulation_run = {}
-    simulation_run['traces'] = file['traces'][run_id]
-    simulation_run['parameters'] = file['parameters'][run_id]
-    simulation_run['time'] = file['time'][run_id]
-    return Simulation.from_dict(simulation_run)
-
-
-def load_simulation_runs(save_dir, data_name):
-    """
-    This specific function is used to read a data file and extract simulation runs from it 
-    """
-    file = h5py.File(save_dir + data_name + '.h5', 'r')
-    simulation_runs = []
-    for run_id in file['traces']:
-        simulation_runs.append(load_simulation_run(file, run_id))
+import os
+import numpy as np 
+import json 
+import logging
+logging.basicConfig(level=logging.INFO,
+                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+class SimulationHDF5:
+    def __init__(self, save_dir="./data", **kwargs):
+        os.makedirs(save_dir, exist_ok=True)
+        self.filename = save_dir + "/results.h5"
     
-    return simulation_runs
+    def save_simulation(self, parameters, outputs):
+        with h5py.File(self.filename, 'a') as f:
+            if 'simulations' not in f:
+                f.create_group('simulations')
+
+            sim_group = f['simulations']
+            sim_idx = len(sim_group)
+            sim_group.create_group(f'sim_{sim_idx}')
+            sim_group[f'sim_{sim_idx}']['parameters'] = json.dumps(parameters)
+            sim_group[f'sim_{sim_idx}']['outputs'] = np.array(outputs)
+        
+    def save_simulations(self, parameter_set, output_set):
+        for p, o in zip(parameter_set, output_set):
+            self.save_simulation(p,o)
+    
+    def get_all_simulations(self):
+        simulations = []
+        with h5py.File(self.filename, 'r') as f:
+            if 'simulations' in f:
+                sim_group = f['simulations']
+                for sim_name in sim_group:
+                    parameters = json.loads(sim_group[sim_name]['parameters'][()])
+                    outputs = sim_group[sim_name]['outputs'][:]
+                    simulations.append((parameters, outputs))
+        return simulations
+    
+    def get_filtered_simulation(self, metrics, metric_order):
+        """
+        This function retrieves all the simulations, filters and strips them according to the metrics provdided before returning 
+        a tuple of (parameters, outputs) as np.arrays. 
+        """
+        
+        simulations = self.get_all_simulations()
+        thetas = []
+        obs = []
+
+        # First we map metric names to index in the output of the simulation
+        ids = []
+        for metric in metrics: 
+            index = metric_order.index(metric[0])
+            ids.append(index)
+        for sim in simulations:
+            o_out = sim[1]
+            # We iterate over all metrics to filter 
+            
+            for metric, id in zip(metrics,ids):
+                # get the respective metric index in the output
+                # Check if output is out of [low_bound, up_bound] of the metric 
+                if o_out[id] < metric[1][0] or o_out[id] > metric[1][1]:
+                    # Remove this simulation and break (continue with next simulation sample)
+                    logger.debug(f'Removing simulation violating {metric[0]}([{ metric[1][0]}, { metric[1][1]}]) with value {o_out[id]}')
+                    simulations.remove(sim)
+                    break
+        logger.debug(f"{len(simulations)} Simulations remaining after filtering")
+    
+      
+
+        # Now we will get the format to return the simulations as pair of numpy arrays
+        thetas = []
+        obs = []
+        for sim in simulations:
+            th_raw = sim[0]['parameters']
+            th = []
+            for s in list(th_raw.keys()):
+            
+                th= th + list(th_raw[s].values())
+            
+            out = sim[1]
+            # only select ids of the passed metrics
+            out = out[ids]
+            thetas.append(th)
+            obs.append(out)
+        return np.array(thetas).astype(np.float32), np.array(obs).astype(np.float32)
+       
+        
+
+
+
+
+
+            
