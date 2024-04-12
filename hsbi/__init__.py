@@ -1,10 +1,14 @@
 from concurrent import futures 
 from .simulator.network import Rate_STDP_Network, plasticity_parameters, run_simulation
+from .simulator.data import SimulationHDF5
 from .density_estimator import MakePosterior
+from sbi.utils import BoxUniform
 from .metrics import Metrics
 import numpy as np 
 import logging
+import torch
 import hashlib
+from tqdm import tqdm 
 import sys
 logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -12,8 +16,9 @@ logging.basicConfig(level=logging.INFO,
 logger = logging.getLogger(__name__)
 
 class HSBI: 
-    def __init__(self, num_workers=2, ):
+    def __init__(self, num_workers=10, num_ensamble=3):
         self.num_workers = num_workers
+        self.num_ensemble = num_ensamble
         self.simulator = None
         self.metrics_defined = False
         self.parameters_defined = False
@@ -75,6 +80,17 @@ class HSBI:
                     continue
         self.metrics_defined = True
 
+    def get_metrics_list(self):
+        """Returns the metrics list used as a list of tuples (name, bounds)"""
+        if not self.metrics_defined:
+            self.define_metrics()
+        metrics_list = self.metrics_list
+
+        return_list = []
+        for name, bounds in zip(metrics_list.keys(), metrics_list.values()):
+            return_list.append((name, bounds))
+        return return_list
+
     def define_parameters(self, plasiticty_connections=['ee', 'ie'], **kwargs):
         """
         Only ee or ie plasticity connection supported for now.
@@ -87,6 +103,11 @@ class HSBI:
             for param, prior in zip(parameters,parameter_priors) :
                 all_parameters[f'{pconn}_{param}'] = prior
         self.parameters = all_parameters
+        self.prior_lower_bound = [p[0] for p in parameter_priors]
+        self.prior_lower_bound = self.prior_lower_bound * len(plasiticty_connections)
+        self.prior_upper_bound = [p[1] for p in parameter_priors]
+        self.prior_upper_bound = self.prior_upper_bound * len(plasiticty_connections)
+        self.theta_dim = len(self.parameters.keys())
         self.parameters_defined = True
 
     # Main entry point of the algorithm
@@ -98,7 +119,7 @@ class HSBI:
         Parameters:
         - metrics:list (optional): A list of metrics to be used (subset of possible metrics).
         - metric_value:dict (optional): A dictionary specifying specific metric bounds.
-       
+        - data_folder:str (optional) : A path where the simulation results will be stored
 
         Returns:
         None
@@ -106,11 +127,26 @@ class HSBI:
         # We first define the parameters and metrics of the run
         self.define_parameters(**kwargs)
         self.define_metrics(**kwargs)
+        self.data_handler = SimulationHDF5(**kwargs)
+        prior = BoxUniform(low=torch.tensor(self.prior_lower_bound), high=torch.tensor(self.prior_upper_bound))
+        self.posterior = MakePosterior(
+                    theta_dim=self.theta_dim,
+                    prior = prior,
+                    num_ensemble=self.num_ensemble,
+        )
         # Here we want to apply the principle of fSBI
         # We will apply n-conditions at a time
-        print("ROUND 1")
-        self.round(metrics=['test'])
-    
+
+        metrics_list = self.get_metrics_list()
+        current_metrics = []
+        k = 0
+        for metric in metrics_list:
+            k +=1
+            logger.info(f"--- Starting Round {k} ---")
+            current_metrics.append(metric)
+            self.round(metrics=current_metrics)
+       
+
 
 
 
@@ -130,23 +166,26 @@ class HSBI:
         return new_thetas, seeds
     
 
-    def round(self, metrics=None, n_samples=5):
+    def round(self, metrics=None, n_samples=1000):
         """
+        This method represents a single round of fSBI. 
+        The method receives a list of metrics that should be applied as well as the number of samples that should be simulated in this round.
+
+        Functionality of the method:
+        (the metrics array must at least contain one metric)
+        It is assumed that a posterior has already been trained on the metrics [n-1] where n is the length of the metrics list provided.
+        This means that if only 1 metric is provided, no posterior is trained so far.
+
+        First new samples are created. Samples are created from the posterior if necessary (metrics length >= 2) or from the defined prior 
 
         """
       
-        ###################################################
-        ### 
-        ###
-        ### Here we simulation call needs to be implemented
-        ###
-        ###
-        ###################################################
+      
 
         # if only one metric is given this means that we are in the first round,
         # we get samples from our defined prior instead of the posterior
         if not metrics:
-            logger.warning("Called a simulation round without specified metrics, skipping.")
+            logger.warning("Called a simulation round without specified metriecs, skipping.")
             return None
         if len(metrics) == 1:
             # Extract the prior values to a np array 
@@ -159,9 +198,35 @@ class HSBI:
             # Use prior values to uniform sample
             thetas = np.random.uniform(arr_priors[:, 0], arr_priors[:, 1], size=(n_samples, len(arr_priors)))
             thetas, _ = self._make_unique_samples(num_samples=n_samples, thetas=thetas)
+            _ , metric_order = self.simulate(thetas)
+            self.metric_order = metric_order
+        else:
+            """Here we acually want to call a trained posterior ensamble to sample thetas from it"""
+            # Extraxt the prior values from the pretrained posterior
+            # We will use metrics [n-1] that need to correspond to the input dimensions of the posterior network
+            constrain_metrics = metrics[:-1]
+            lower_bounds = []
+            upper_bounds = []
+            for (m_name, m_bounds) in constrain_metrics:
+                lower_bounds.append(m_bounds[0])
+                upper_bounds.append(m_bounds[1])
+            # Next we will draw uniform samples from this distribution
+            x0 = np.random.uniform(lower_bounds, upper_bounds, (n_samples, len(lower_bounds)))
+            x0 = torch.tensor(x0)
+            # ############################### 
+            #We need to generate samples from a pre-trained posterior here
+            # ###############################
+            bounds = {'low' : torch.tensor(self.prior_lower_bound), 'high' : torch.tensor(self.prior_upper_bound)}
+            samples = self.posterior.rsample(x0, bounds)
 
-        outputs = self.simulate(thetas)
-        return outputs
+
+        # Call the simulation interface, simulation are stored on disk 
+        #
+        # Now we get all the sample
+
+        thetas, obs = self.data_handler.get_filtered_simulation(metrics,  self.metric_order)
+        self.train_posterior(thetas=thetas, obs=obs)
+        return None
     
 
 
@@ -170,13 +235,14 @@ class HSBI:
         This function wrapps the simulation procedure.
         The function gets n parameter sets in a list and runs simulation in parallel.
         The total number of parameters run in parallel are controlled by the num_workers attribute of the class
-        The function returns a list of calculated summary methods 
+        Simulation are stored by the instance attribute data_handler
+        The function returns None
         """
         metrics = Metrics(broad=True)
         categories = meta_params.get('plasticity')
         assert categories, 'Plasticity categories must be specified!'
 
-        print("SIMULATING")
+        logger.info(f"---- Starting stimulation (simulations: {len(sim_params)}   threads: {self.num_workers}) ----")
       
         args = [{'parameters' : plasticity_parameters(categories, params)} for params in sim_params]
         import multiprocessing
@@ -185,14 +251,18 @@ class HSBI:
             result_iter = pool.imap(run_simulation, args)
             """ Get results as they are ready """
             output =  []
+            i = 0
             for result in result_iter:
-                logger.debug("Retrieving result ...")
-                output.append(metrics.calculate_metrics(result, return_type='list'))
+                i += 1
+                logger.info(f"----- Retrieving raw simulation result {i} / {len(sim_params)} -----")
+                m_values, metrics_list = metrics.calculate_metrics(result, return_type='list')
+                output.append(m_values)
         output = np.array(output)
-        print(output.shape)
-        return output
+        logger.info("----- Saving simulations -----")
+        self.data_handler.save_simulations(parameter_set=args, output_set=output)
+        return output, metrics_list
        
-    def fit_posterior(self, thetas, obs, num_ensemble=None, **kwargs):
+    def train_posterior(self, thetas, obs, **kwargs):
         """
         This function fits the posterior of the model
         """
@@ -203,15 +273,10 @@ class HSBI:
         ###
         ###
         ###################################################
-
-        """
-        posterior = MakePosterior(
-                    theta_dim=self.theta_dim,
-                    low_lim=self.low_prior_bound,
-                    up_lim=self.up_prior_bound,
-                    num_ensemble=num_ensemble if not None else 10,
-        )
-        posterior.get_ensemble_posterior(thetas,
+        thetas = torch.tensor(thetas)
+        obs = torch.tensor(obs)
+      
+        self.posterior.get_ensemble_posterior(thetas,
                                          obs,
                                          **kwargs)
-        """
+        
