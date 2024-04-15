@@ -50,6 +50,7 @@ class HSBI:
        
         self.metrics_list = {'rate_e' : (0,50),
                        'rate_i' : (0,50),
+                       'cv_isi' : (0.7, 1000),
                        'f_w-blow' : (0, 0.1),
                        'w_creep' : (0.0, 0.05),
                        'wmean_ee' : (0.0, 0.5),
@@ -57,7 +58,7 @@ class HSBI:
                        'mean_fano_t' : (0.5, 2.5),
                        'mean_fano_s' : (0.5, 2.5), 
                        'auto_cov' : (0.0, 0.1),
-                       'cv_isi' : (0.7, 1000),
+                      
                        'std_fr' : (0, 0.5),
                        "std_rate_spatial" : (0, 5)
                        }
@@ -166,7 +167,7 @@ class HSBI:
         return new_thetas, seeds
     
 
-    def round(self, metrics=None, n_samples=1000):
+    def round(self, metrics=None, n_samples=10000):
         """
         This method represents a single round of fSBI. 
         The method receives a list of metrics that should be applied as well as the number of samples that should be simulated in this round.
@@ -179,32 +180,64 @@ class HSBI:
         First new samples are created. Samples are created from the posterior if necessary (metrics length >= 2) or from the defined prior 
 
         """
-      
-      
 
-        # if only one metric is given this means that we are in the first round,
-        # we get samples from our defined prior instead of the posterior
-        if not metrics:
-            logger.warning("Called a simulation round without specified metriecs, skipping.")
-            return None
-        if len(metrics) == 1:
-            # Extract the prior values to a np array 
-            priors = self.parameters.values()
-            arr_priors = np.empty((0, 2))
-            for prior in priors:
-        
-                arr_priors = np.vstack((arr_priors, np.array(prior)))
-          
-            # Use prior values to uniform sample
-            thetas = np.random.uniform(arr_priors[:, 0], arr_priors[:, 1], size=(n_samples, len(arr_priors)))
-            thetas, _ = self._make_unique_samples(num_samples=n_samples, thetas=thetas)
+        round_completed = False
+
+        # We implement repetitive mini-rounds with the same metric
+        # We go over mini-rounds as long as the samples from the posterior do not satisfy the defined metrics in 0.95
+        # of cases 
+        logger.info(f"---- Filtering with metrics {metrics} ----")
+        while not round_completed:
+
+            # if only one metric is given this means that we are in the first round,
+            # we get samples from our defined prior instead of the posterior
+            if not metrics:
+                logger.warning("Called a simulation round without specified metriecs, skipping.")
+                return None
+            if len(metrics) == 1:
+                # Extract the prior values to a np array 
+                priors = self.parameters.values()
+                arr_priors = np.empty((0, 2))
+                for prior in priors:
+            
+                    arr_priors = np.vstack((arr_priors, np.array(prior)))
+            
+                # Use prior values to uniform sample
+                thetas = np.random.uniform(arr_priors[:, 0], arr_priors[:, 1], size=(n_samples, len(arr_priors)))
+                thetas, _ = self._make_unique_samples(num_samples=n_samples, thetas=thetas)
+            
+            else:
+                """Here we acually want to call a trained posterior ensamble to sample thetas from it"""
+                # Extraxt the prior values from the pretrained posterior
+                # We will use metrics [n-1] that need to correspond to the input dimensions of the posterior network
+                constrain_metrics = metrics[:-1]
+                lower_bounds = []
+                upper_bounds = []
+                for (m_name, m_bounds) in constrain_metrics:
+                    lower_bounds.append(m_bounds[0])
+                    upper_bounds.append(m_bounds[1])
+                # Next we will draw uniform samples from this distribution
+                x0 = np.random.uniform(lower_bounds, upper_bounds, (n_samples, len(lower_bounds)))
+                x0 = torch.tensor(x0)
+                # ############################### 
+                #We need to generate samples from a pre-trained posterior here
+                # ###############################
+                bounds = {'low' : torch.tensor(self.prior_lower_bound), 'high' : torch.tensor(self.prior_upper_bound)}
+                thetas = self.posterior.rsample(x0, bounds).detach().numpy().tolist()
+
+            # We simulate new samples, all samples are stored on disk 
             _ , metric_order = self.simulate(thetas)
             self.metric_order = metric_order
-        else:
-            """Here we acually want to call a trained posterior ensamble to sample thetas from it"""
-            # Extraxt the prior values from the pretrained posterior
-            # We will use metrics [n-1] that need to correspond to the input dimensions of the posterior network
-            constrain_metrics = metrics[:-1]
+
+            # Now we get all the sample
+            
+            thetas, obs = self.data_handler.get_filtered_simulation(metrics,  self.metric_order)
+            logger.info(f"--- Training posterior on {thetas.shape[0]} samples---")
+            self.train_posterior(thetas=thetas, obs=obs)
+
+            # Lets sample to check model quality
+            # Now we use all metrics since we already trained the new posterior 
+            constrain_metrics = metrics
             lower_bounds = []
             upper_bounds = []
             for (m_name, m_bounds) in constrain_metrics:
@@ -217,15 +250,17 @@ class HSBI:
             #We need to generate samples from a pre-trained posterior here
             # ###############################
             bounds = {'low' : torch.tensor(self.prior_lower_bound), 'high' : torch.tensor(self.prior_upper_bound)}
-            samples = self.posterior.rsample(x0, bounds)
-
-
-        # Call the simulation interface, simulation are stored on disk 
-        #
-        # Now we get all the sample
-
-        thetas, obs = self.data_handler.get_filtered_simulation(metrics,  self.metric_order)
-        self.train_posterior(thetas=thetas, obs=obs)
+            thetas  = self.posterior.rsample(x0, bounds).detach().numpy()
+            x0 = x0.detach().numpy()
+            _, rem_obs = self.data_handler.get_filtered_simulation(constrain_metrics,  self.metric_order, (x0, thetas))
+            threshold = 0.95 * n_samples
+          
+       
+            if len(rem_obs) > threshold:
+                round_completed = True
+                logger.info(f"---- Completing Round with a value of {threshold} ----")
+            logger.info(f'---- Next mini round due to low threshold of {threshold}')
+            
         return None
     
 
@@ -258,7 +293,7 @@ class HSBI:
                 m_values, metrics_list = metrics.calculate_metrics(result, return_type='list')
                 output.append(m_values)
         output = np.array(output)
-        logger.info("----- Saving simulations -----")
+        logger.info("---- Saving simulations ----")
         self.data_handler.save_simulations(parameter_set=args, output_set=output)
         return output, metrics_list
        
@@ -278,5 +313,6 @@ class HSBI:
       
         self.posterior.get_ensemble_posterior(thetas,
                                          obs,
+                                         save_path="./data/posterior_model.pkl",
                                          **kwargs)
         

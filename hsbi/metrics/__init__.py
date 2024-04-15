@@ -345,20 +345,19 @@ class Metrics:
         This method calculates the metrics for the given simulation data
         """
         metrics = {}
-        metrics['cv_isi'] = self.cv_isi(sim_data = sim_data)
-        metrics['rate_i'] = self.rate_i(sim_data = sim_data)
         metrics['rate_e'] = self.rate_e(sim_data = sim_data)
-        metrics['wmean_ie'] = self.wief(sim_data = sim_data)
-        metrics['wmean_ee'] = self.weef(sim_data = sim_data)
-        metrics['w_creep'] = self.w_creep(sim_data = sim_data)
+        metrics['rate_i'] = self.rate_i(sim_data = sim_data)
         metrics['cv_isi'] = self.cv_isi(sim_data = sim_data)
         metrics['f_w-blow'] = self.w_blow(sim_data = sim_data) 
+        metrics['w_creep'] = self.w_creep(sim_data = sim_data)
+        metrics['wmean_ee'] = self.weef(sim_data = sim_data)
+        metrics['wmean_ie'] = self.wief(sim_data = sim_data)
         metrics['mean_fano_t'] = self.averaged_fano_time(sim_data = sim_data)
         metrics['mean_fano_s'] = self.averaged_fano_spatial(sim_data = sim_data)
+        metrics['auto_cov'] = self.auto_cov(sim_data = sim_data)
         metrics['std_fr'] = self.std_fr(sim_data = sim_data)
         metrics['std_rate_spatial'] = self.std_fr_s(sim_data = sim_data)
-        metrics['auto_cov'] = self.auto_cov(sim_data = sim_data)
-
+ 
         if return_type == 'dict':
             return metrics
         elif return_type == "list":

@@ -155,7 +155,7 @@ class MakePosterior:
             done = False
             while not done:
                 thetas = self.posterior.sample((1,),x=x,show_progress_bars=False)
-                print(thetas)
+                return thetas 
                 # Reject samples that are outside prior bounds
                 if torch.all( torch.logical_and(bounds["low"] < thetas, thetas < bounds["high"]) ):
                     done = True

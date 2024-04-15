@@ -37,53 +37,78 @@ class SimulationHDF5:
                     simulations.append((parameters, outputs))
         return simulations
     
-    def get_filtered_simulation(self, metrics, metric_order):
+    def get_filtered_simulation(self, metrics, metric_order, simulations=None):
         """
         This function retrieves all the simulations, filters and strips them according to the metrics provdided before returning 
         a tuple of (parameters, outputs) as np.arrays. 
+        If simulations are provided they will be filled, if not all simulation from the respective obj file are read and filtered.
+        Simulations should be provded as a tuple of arrays (obs, thetas)
         """
-        
-        simulations = self.get_all_simulations()
-        thetas = []
-        obs = []
-
-        # First we map metric names to index in the output of the simulation
         ids = []
         for metric in metrics: 
             index = metric_order.index(metric[0])
             ids.append(index)
-        for sim in simulations:
-            o_out = sim[1]
-            # We iterate over all metrics to filter 
-            
-            for metric, id in zip(metrics,ids):
-                # get the respective metric index in the output
-                # Check if output is out of [low_bound, up_bound] of the metric 
-                if o_out[id] < metric[1][0] or o_out[id] > metric[1][1]:
-                    # Remove this simulation and break (continue with next simulation sample)
-                    logger.debug(f'Removing simulation violating {metric[0]}([{ metric[1][0]}, { metric[1][1]}]) with value {o_out[id]}')
-                    simulations.remove(sim)
-                    break
-        logger.debug(f"{len(simulations)} Simulations remaining after filtering")
+        if simulations is None:
+            simulations = self.get_all_simulations()
+            thetas = []
+            obs = []
+
+            # First we map metric names to index in the output of the simulation
+         
+ 
+        
+            for sim in simulations:
+                o_out = sim[1]
+                # We iterate over all metrics to filter 
+                
+                for metric, id in zip(metrics,ids):
+                    # get the respective metric index in the output
+                    # Check if output is out of [low_bound, up_bound] of the metric 
+                    if o_out[id] < metric[1][0] or o_out[id] > metric[1][1]:
+                        # Remove this simulation and break (continue with next simulation sample)
+                        logger.debug(f'Removing simulation violating {metric[0]}([{ metric[1][0]}, { metric[1][1]}]) with value {o_out[id]}')
+                        simulations.remove(sim)
+                        break
+            logger.debug(f"{len(simulations)} Simulations remaining after filtering")
     
       
 
-        # Now we will get the format to return the simulations as pair of numpy arrays
-        thetas = []
-        obs = []
-        for sim in simulations:
-            th_raw = sim[0]['parameters']
-            th = []
-            for s in list(th_raw.keys()):
+            # Now we will get the format to return the simulations as pair of numpy arrays
+            thetas = []
+            obs = []
+            for sim in simulations:
+                th_raw = sim[0]['parameters']
+                th = []
+                for s in list(th_raw.keys()):
+                
+                    th= th + list(th_raw[s].values())
+                
+                out = sim[1]
+                # only select ids of the passed metrics
+                out = out[ids]
+                thetas.append(th)
+                obs.append(out)
+            return np.array(thetas).astype(np.float32), np.array(obs).astype(np.float32)
+        # simulations provided 
+        else:
+            # we extract thetas and obs
             
-                th= th + list(th_raw[s].values())
-            
-            out = sim[1]
-            # only select ids of the passed metrics
-            out = out[ids]
-            thetas.append(th)
-            obs.append(out)
-        return np.array(thetas).astype(np.float32), np.array(obs).astype(np.float32)
+            obs, thetas = simulations[0].copy().tolist(), simulations[1].copy().tolist()
+            for ob, th in zip(obs, thetas):
+
+                # check if ob satisfied metrics 
+                for metric, id in zip(metrics,ids):
+                    # get the respective metric index in the output
+                    # Check if output is out of [low_bound, up_bound] of the metric 
+                    if ob[id] < metric[1][0] or ob[id] > metric[1][1]:
+                        # Remove this simulation and break (continue with next simulation sample)
+                        logger.debug(f'Removing simulation violating {metric[0]}([{ metric[1][0]}, { metric[1][1]}]) with value {ob[id]}')
+                        obs.remove(obs)
+                        thetas.remove(th)
+            return (thetas, obs)
+                    
+
+
        
         
 
