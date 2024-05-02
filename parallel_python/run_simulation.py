@@ -131,11 +131,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process some parameters.")
 
     # Add arguments
-    parser.add_argument('parameters', metavar='simulation_parameters', type=float, nargs='+',
-                        help='A list of parameters to process')
+    parser.add_argument('parameters', metavar='simulation_parameters', type=str,
+                        help='list of simulation parameters')
 
     # Parse the arguments
     args = parser.parse_args()
     sim_parameters = args.parameters
+    sim_parameters = sim_parameters.split("_")
+    sim_parameters = [float(s) for s in sim_parameters]
     simulation(sim_parameters)
    
