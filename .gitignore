@@ -1,1 +1,12 @@
 /data
+# ignore sbi relaed directories
+/sbi-logs
+/tmp
+
+
+# Ignore Python bytecode directories
+__pycache__/
+
+# Optionally, ignore all .pyc files anywhere in the project
+*.pyc
+
