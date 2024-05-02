@@ -134,7 +134,6 @@ def simulation(sim_params):
     logger.info("Successfully completed run!!")
     return  {'spikes': spikes, 'weights' : weights,
                  'runtime' : sim_time,
-                 'plasticity' :list(str(k) for k in parameters.keys()),
                  't_start' : 0,#pre_simtime,
                  't_end' : sim_time,#pre_simtime+simtime,
                  'dt' : float(defaultclock.dt)}
