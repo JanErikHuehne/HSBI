@@ -138,6 +138,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     sim_parameters = args.parameters
     sim_parameters = sim_parameters.split("_")
+    print(sim_parameters)
     sim_parameters = [float(s) for s in sim_parameters]
     simulation(sim_parameters)
    
