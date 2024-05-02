@@ -83,6 +83,19 @@ def simulation(sim_params):
                 die_trace_post_plus/dt = -ie_trace_post_plus / ie_tauplus_stdp : 1 (event-driven)
                 die_trace_post_minus/dt = -ie_trace_post_minus / ie_tauminus_stdp : 1 (event-driven)
                 '''
+    con_ie = Synapses(Pi, Pe, model=synapse_model,
+                                on_pre='''
+                                        g_gaba += w*nS
+                                        ie_trace_pre_plus += 1.0
+                                        ie_trace_pre_minus += 1.0
+                                        w = clip(w + lr * (ie_alpha_pre + ie_Aplus * ie_trace_post_plus + ie_Aminus * ie_trace_post_minus), 0, gmax)
+                                        ''',
+                                on_post='''
+                                        ie_trace_post_plus += 1
+                                        ie_trace_post_minus += 1
+                                        w = clip(w + lr * (ie_alpha_post + ie_Aplus * ie_trace_pre_plus + ie_Aminus * ie_trace_pre_minus), 0, gmax)
+                                        '''
+                        )
     con_ie.connect(p=epsilon)
     neurons.v = 0
     P = PoissonGroup(input_num, input_freq*Hz)
