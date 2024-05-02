@@ -1,6 +1,9 @@
 import argparse
 from brian2 import *
+import logging
+logger = logging.getLogger(__name__)
 def simulation(sim_params):
+    logger.info("Starting simulation!!")
     start_scope()
     """Shared network parameters"""
     NE = 200
@@ -134,4 +137,5 @@ if __name__ == "__main__":
     # Parse the arguments
     args = parser.parse_args()
     sim_parameters = args.parameters
+    simulation(sim_parameters)
    
