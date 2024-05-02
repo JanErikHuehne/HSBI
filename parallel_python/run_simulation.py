@@ -152,5 +152,5 @@ if __name__ == "__main__":
     sim_parameters = sim_parameters.split()
     print(sim_parameters)
     sim_parameters = [float(s) for s in sim_parameters]
-    simulation(sim_parameters)
+    print(simulation(sim_parameters))
    
