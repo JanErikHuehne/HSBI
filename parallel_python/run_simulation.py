@@ -101,12 +101,12 @@ def simulation(sim_params):
                         'num_neurons' : NE,
                         'times' : np.array(times).copy(),
                         'neurons' : np.array(neurons_ids).copy()}
-        times = MPi.t
-        neurons_ids = MPi.i
-        spikes['Pi'] = {'type' : 'inhibitory',
-                        'num_neurons' : NI,
-                        'times' :  np.array(times).copy(),
-                        'neurons' :  np.array(neurons_ids).copy()}
+    times = MPi.t
+    neurons_ids = MPi.i
+    spikes['Pi'] = {'type' : 'inhibitory',
+                    'num_neurons' : NI,
+                    'times' :  np.array(times).copy(),
+                    'neurons' :  np.array(neurons_ids).copy()}
     weights = {}
     weights['ie'] = {
                                 'from' :'Pi',
