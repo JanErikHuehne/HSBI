@@ -180,7 +180,6 @@ if __name__ == "__main__":
         with h5py.File(file, 'w') as h:          
                 for k, v in result.items():
                         if isinstance(v, dict):
-                                v = v.items()
                                 # If the value is a dictionary, create a group and save each item
                                 group = h.create_group(k)
                                 for key, val in v.items():
