@@ -160,6 +160,12 @@ if __name__ == "__main__":
 
     temp_sim_runs = Path(args.working_dir) / "raw_results"
     os.makedirs(temp_sim_runs, exist_ok=True)
+
+    import hashlib 
+    import random
+    h = hashlib.sha3_256()
+    h.update(str.encode(str(random.random())))
+    print(h.hexdigest())
   
 
 
