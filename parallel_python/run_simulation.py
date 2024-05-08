@@ -136,7 +136,7 @@ def simulation(sim_params):
                                 'weights' : np.array(W_EE.w).copy()
                     }
     logger.info("Successfully completed run!!")
-    return  {'spikes': np.array(spikes), 'weights' : np.array(weights),
+    return  {'spikes': spikes, 'weights' : weights,
                  'runtime' : sim_time,
                  't_start' : 0,#pre_simtime,
                  't_end' : sim_time,#pre_simtime+simtime,
@@ -173,13 +173,16 @@ if __name__ == "__main__":
                 file = temp_sim_runs / run_id
                 if not file.exists():
                         ex = False
-        for k, v in result.items():
-               print(v)
-        #with h5py.File(file, 'w') as h:          
-        #        for k, v in result.items():
-        #                print(type(v))
-        #                print(v.dtype)
-        #                h.create_dataset(str(k), data=v)
+   
+        with h5py.File(file, 'w') as h:          
+                for k, v in result.items():
+                        if isinstance(v, dict):
+                                # If the value is a dictionary, create a group and save each item
+                                group = h.create_group(k)
+                                for key, val in v.items():
+                                        group.create_dataset(key, data=np.array(val))
+                        else:
+                                h.create_dataset(k, data=np.array(v))
 
 
   
