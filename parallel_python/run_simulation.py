@@ -171,7 +171,7 @@ if __name__ == "__main__":
                 file = temp_sim_runs / run_id
                 if not file.exists():
                         ex = False
-        with open(file, "r") as f:
+        with open(file, "w") as f:
                import json
                json.dump(result)
 
