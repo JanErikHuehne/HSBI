@@ -180,6 +180,7 @@ if __name__ == "__main__":
                                 # If the value is a dictionary, create a group and save each item
                                 group = h.create_group(k)
                                 for key, val in v.items():
+                                        print(val)
                                         print(np.array(val).dtype)
                                         group.create_dataset(key, data=np.array(val))
                         else:
