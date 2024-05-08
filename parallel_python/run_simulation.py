@@ -173,9 +173,10 @@ if __name__ == "__main__":
                 file = temp_sim_runs / run_id
                 if not file.exists():
                         ex = False
-        h = h5py.File(file)                 
-        for k, v in result.items():
-                h.create_dataset(str(k), data=np.array(v, dtype=np.int8))
+
+        with h5py.File(file, 'w') as h:          
+                for k, v in result.items():
+                        h.create_dataset(str(k), data=np.array(v, dtype=np.int8))
 
 
   
