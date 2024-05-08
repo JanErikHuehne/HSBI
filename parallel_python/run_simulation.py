@@ -173,7 +173,7 @@ if __name__ == "__main__":
                         ex = False
         with open(file, "w") as f:
                import json
-               json.dump(result)
+               json.dump(f, result)
 
 
   
