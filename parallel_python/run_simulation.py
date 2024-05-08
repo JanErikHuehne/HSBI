@@ -176,7 +176,7 @@ if __name__ == "__main__":
 
         with h5py.File(file, 'w') as h:          
                 for k, v in result.items():
-                        h.create_dataset(str(k), data=np.array(v, dtype=np.int8))
+                        h.create_dataset(str(k), data=np.array(v))
 
 
   
