@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import numpy as np 
 import h5py
+from collections.abc import Iterable
 logger = logging.getLogger(__name__)
 def simulation(sim_params):
     logger.info("Starting simulation!!")
@@ -183,10 +184,13 @@ if __name__ == "__main__":
                                 # If the value is a dictionary, create a group and save each item
                                 group = h.create_group(k)
                                 for key, val in v.items():
-                                        print(val)
-                                        print(np.array(val).dtype)
+                                        if not isinstance(val, Iterable):
+                                                val = [val]
+                                        
                                         group.create_dataset(key, data=np.array(val, dtype=str))
                         else:
+                                if not isinstance(v, Iterable):
+                                                v = [v]
                                 h.create_dataset(k, data=np.array(v))
 
 
