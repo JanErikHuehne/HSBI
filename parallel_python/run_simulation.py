@@ -7,6 +7,31 @@ import numpy as np
 import h5py
 from collections.abc import Iterable
 logger = logging.getLogger(__name__)
+
+def save_results(file_path, results):
+    with h5py.File(file_path, 'w') as h:
+        for k, v in results.items():
+            if isinstance(v, dict):
+                group = h.create_group(k)
+                for key, val in v.items():
+                    if isinstance(val, np.ndarray):
+                        group.create_dataset(key, data=val)
+                    elif isinstance(val, str):
+                        # Store strings as fixed-size ASCII to ensure compatibility
+                        dt = h5py.string_dtype('ascii')
+                        group.create_dataset(key, data=np.string_(val), dtype=dt)
+                    else:
+                        # Convert other types to strings or appropriate handling
+                        group.create_dataset(key, data=str(val))
+            else:
+                if isinstance(v, np.ndarray):
+                    h.create_dataset(k, data=v)
+                elif isinstance(v, str):
+                    dt = h5py.string_dtype('ascii')
+                    h.create_dataset(k, data=np.string_(v), dtype=dt)
+                else:
+                    h.create_dataset(k, data=str(v))
+
 def simulation(sim_params):
     logger.info("Starting simulation!!")
     start_scope()
@@ -177,21 +202,8 @@ if __name__ == "__main__":
                 file = temp_sim_runs / run_id
                 if not file.exists():
                         ex = False
-        print(result)
-        with h5py.File(file, 'w') as h:          
-                for k, v in result.items():
-                        if isinstance(v, dict):
-                                # If the value is a dictionary, create a group and save each item
-                                group = h.create_group(k)
-                                for key, val in v.items():
-                                        if not isinstance(val, Iterable):
-                                                val = [val]
-                                        
-                                        group.create_dataset(key, data=np.array(val, dtype=str))
-                        else:
-                                if not isinstance(v, Iterable):
-                                                v = [v]
-                                h.create_dataset(k, data=np.array(v))
+        save_results(file, result)
+       
 
 
   
