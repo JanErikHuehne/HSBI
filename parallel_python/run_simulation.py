@@ -1,6 +1,7 @@
 import argparse
 from brian2 import *
 import logging
+from pathlib import Path
 logger = logging.getLogger(__name__)
 def simulation(sim_params):
     logger.info("Starting simulation!!")
@@ -150,9 +151,14 @@ if __name__ == "__main__":
     # Parse the arguments
     args = parser.parse_args()
     sim_parameters = args.parameters
-    print(args.working_dir)
     sim_parameters = sim_parameters.split()
-    print(sim_parameters)
-    #sim_parameters = [float(s) for s in sim_parameters]
-    #print(simulation(sim_parameters))
+    sim_parameters = [float(s) for s in sim_parameters]
+    #result = simulation(sim_parameters)
+
+    # now we save the raw simulation results 
+
+    temp_sim_runs = Path(args.working_dir) / "raw_results"
+    temp_sim_runs.make_dirs(exist_ok=True)
+
+
    
