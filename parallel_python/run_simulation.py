@@ -185,7 +185,7 @@ if __name__ == "__main__":
                                 for key, val in v.items():
                                         print(val)
                                         print(np.array(val).dtype)
-                                        group.create_dataset(key, data=np.array(val))
+                                        group.create_dataset(key, data=np.array(val, dtype=str))
                         else:
                                 h.create_dataset(k, data=np.array(v))
 
