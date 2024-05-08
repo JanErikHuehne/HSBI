@@ -141,31 +141,41 @@ def simulation(sim_params):
                  'dt' : float(defaultclock.dt)}
         
 if __name__ == "__main__":
-    # Create the argument parser
-    parser = argparse.ArgumentParser(description="Process some parameters.")
+        # Create the argument parser
+        parser = argparse.ArgumentParser(description="Process some parameters.")
 
-    # Add arguments
-    parser.add_argument("--working_dir", type=str)
-    parser.add_argument('parameters', metavar='simulation_parameters', type=str,
-                        help='list of simulation parameters')
- 
-    # Parse the arguments
-    args = parser.parse_args()
-    sim_parameters = args.parameters
-    sim_parameters = sim_parameters.split()
-    sim_parameters = [float(s) for s in sim_parameters]
-    #result = simulation(sim_parameters)
+        # Add arguments
+        parser.add_argument("--working_dir", type=str)
+        parser.add_argument('parameters', metavar='simulation_parameters', type=str,
+                                help='list of simulation parameters')
+        
+        # Parse the arguments
+        args = parser.parse_args()
+        sim_parameters = args.parameters
+        sim_parameters = sim_parameters.split()
+        sim_parameters = [float(s) for s in sim_parameters]
+        result = simulation(sim_parameters)
 
-    # now we save the raw simulation results 
+        # now we save the raw simulation results 
 
-    temp_sim_runs = Path(args.working_dir) / "raw_results"
-    os.makedirs(temp_sim_runs, exist_ok=True)
+        temp_sim_runs = Path(args.working_dir) / "raw_results"
+        os.makedirs(temp_sim_runs, exist_ok=True)
 
-    import hashlib 
-    import random
-    h = hashlib.sha3_256()
-    h.update(str.encode(str(random.random())))
-    print(h.hexdigest())
+        import hashlib 
+        import random
+        ex = True
+        while ex: 
+                h = hashlib.sha3_256()
+                h.update(str.encode(str(random.random())))
+                run_id = str(h.hexdigest()) + ".json"
+                file = temp_sim_runs / run_id
+                if not file.exists():
+                        ex = False
+        with open(file, "r") as f:
+               import json
+               json.dump(result)
+
+
   
 
 
