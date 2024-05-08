@@ -1,6 +1,7 @@
 import argparse
 from brian2 import *
 import logging
+import os 
 from pathlib import Path
 logger = logging.getLogger(__name__)
 def simulation(sim_params):
@@ -158,7 +159,8 @@ if __name__ == "__main__":
     # now we save the raw simulation results 
 
     temp_sim_runs = Path(args.working_dir) / "raw_results"
-    temp_sim_runs.make_dirs(exist_ok=True)
+    os.makedirs(temp_sim_runs, exist_ok=True)
+  
 
 
    
