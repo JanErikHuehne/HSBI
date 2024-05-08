@@ -173,7 +173,7 @@ if __name__ == "__main__":
                 file = temp_sim_runs / run_id
                 if not file.exists():
                         ex = False
-   
+        print(results)
         with h5py.File(file, 'w') as h:          
                 for k, v in result.items():
                         if isinstance(v, dict):
