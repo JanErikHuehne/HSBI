@@ -3,6 +3,8 @@ from brian2 import *
 import logging
 import os 
 from pathlib import Path
+import numpy as np 
+import h5py
 logger = logging.getLogger(__name__)
 def simulation(sim_params):
     logger.info("Starting simulation!!")
@@ -134,7 +136,7 @@ def simulation(sim_params):
                                 'weights' : np.array(W_EE.w).copy()
                     }
     logger.info("Successfully completed run!!")
-    return  {'spikes': spikes, 'weights' : weights,
+    return  {'spikes': np.array(spikes), 'weights' : np.array(weights),
                  'runtime' : sim_time,
                  't_start' : 0,#pre_simtime,
                  't_end' : sim_time,#pre_simtime+simtime,
@@ -167,13 +169,13 @@ if __name__ == "__main__":
         while ex: 
                 h = hashlib.sha3_256()
                 h.update(str.encode(str(random.random())))
-                run_id = str(h.hexdigest()) + ".json"
+                run_id = str(h.hexdigest()) + ".hdf5"
                 file = temp_sim_runs / run_id
                 if not file.exists():
                         ex = False
-        with open(file, "w") as f:
-               import json
-               json.dump(f, result)
+        h = h5py.File('myfile.hdf5')                 
+        for k, v in result.items():
+                h.create_dataset(str(k), data=np.array(v, dtype=np.int8))
 
 
   
