@@ -143,7 +143,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process some parameters.")
 
     # Add arguments
-    parser.add_argument("--working_dir", type="str")
+    parser.add_argument("--working_dir", type=str)
     parser.add_argument('parameters', metavar='simulation_parameters', type=str,
                         help='list of simulation parameters')
  
