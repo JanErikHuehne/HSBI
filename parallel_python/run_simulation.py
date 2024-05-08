@@ -14,7 +14,7 @@ def simulation(sim_params):
     NI = 160
     input_num = 100
     input_freq = 10 # Hz
-    sim_time = 4
+    sim_time = 0.1
     gmax = 100.0
     lr = 1e-2 
     Aminus = 1.0
@@ -173,11 +173,13 @@ if __name__ == "__main__":
                 file = temp_sim_runs / run_id
                 if not file.exists():
                         ex = False
-
-        with h5py.File(file, 'w') as h:          
-                for k, v in result.items():
-                        print(type(v))
-                        h.create_dataset(str(k), data=v)
+        for k, v in result.items():
+               print(v)
+        #with h5py.File(file, 'w') as h:          
+        #        for k, v in result.items():
+        #                print(type(v))
+        #                print(v.dtype)
+        #                h.create_dataset(str(k), data=v)
 
 
   
