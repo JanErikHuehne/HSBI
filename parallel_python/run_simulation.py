@@ -86,13 +86,13 @@ def metrics(result):
     
     def weef(sim_data):
         """final mean EE weight"""
-        w_trace = sim_data['weights']['ee']['weights']
+        w_trace = sim_data['weights_ee']['weights']
         return np.mean(w_trace[:, -1])
          
 
     def wief(sim_data):
         """final mean IE weight"""
-        w_trace = sim_data['weights']['ie']['weights']
+        w_trace = sim_data['weights_ie']['weights']
         return np.mean(w_trace[:, -1])
 
     result['rate_e'] = rate_e(result)
