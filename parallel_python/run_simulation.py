@@ -160,7 +160,7 @@ def simulation(sim_params):
                                         '''
                                 )
     con_ee.connect(p=epsilon)
-    con_ee = 0.1
+    con_ee.w = 0.1
     # EI Plasticity
     con_ei = Synapses(Pe, Pi, on_pre="g_ampa += 0.1*nS")
     con_ei.connect(p=epsilon)
@@ -196,7 +196,7 @@ def simulation(sim_params):
                                         '''
                         )
     con_ie.connect(p=epsilon)
-    con_ie = 1.0
+    con_ie.w = 1.0
     neurons.v = 0
     P = PoissonGroup(input_num, input_freq*Hz)
     S = Synapses(P, neurons, on_pre='g_ampa += 0.3*nS').connect(p=0.3)
