@@ -32,6 +32,74 @@ def save_results(file_path, results):
                 else:
                     h.create_dataset(k, data=str(v))
 
+
+def metrics(result):
+    bin_size_big = 0.1
+    bin_size_medium = 0.01
+    bin_size_small = 0.001
+    window_view_auto_cov = 0.5
+
+    def extract_neuron_spikes(self, spike_times, neuron_ids):
+            neuron_spikes = {}
+            for i in range(len(neuron_ids)):
+                neuron_id = neuron_ids[i]
+                if not neuron_spikes.get(neuron_id):
+                    neuron_spikes[neuron_id] = []
+                neuron_spikes[neuron_id].append(spike_times[i])
+            return neuron_spikes
+    
+    def rate_e(self, sim_data):
+        ####################################
+        # This method computes the global firing rate of the inhibitory neuron population
+        # We access the spike data of the inibitory neurons
+        ####################################
+
+        spike_data = sim_data['spikes_pe']
+        num_neurons = spike_data['num_neurons']
+
+        # spike times
+        spike_times = spike_data['times']
+
+        total_num_of_spikes = len(spike_times)
+
+        # firing rate
+        rate = total_num_of_spikes / (num_neurons * sim_data['runtime'])
+        return rate
+    
+    def rate_i(self, sim_data):
+        ####################################
+        # This method computes the global firing rate of the inhibitory neuron population
+        # We access the spike data of the inibitory neurons
+        ####################################
+
+        spike_data = sim_data['spikes_pi']
+        num_neurons = spike_data['num_neurons']
+
+        # spike times
+        spike_times = spike_data['times']
+
+        total_num_of_spikes = len(spike_times)
+
+        # firing rate
+        rate = total_num_of_spikes / (num_neurons * sim_data['runtime'])
+        return rate
+    
+    def weef(self, sim_data):
+        """final mean EE weight"""
+        w_trace = sim_data['weights']['ee']['weights']
+        return np.mean(w_trace[:, -1])
+         
+
+    def wief(self, sim_data):
+        """final mean IE weight"""
+        w_trace = sim_data['weights']['ie']['weights']
+        return np.mean(w_trace[:, -1])
+
+    result['rate_e'] = rate_e(result)
+    result['rate_i'] = rate_i(result)
+    result['wmean_ee'] = weef(result)
+    result['wmean_ie'] = wief(result)
+    return result
 def simulation(sim_params):
     logger.info("Starting simulation!!")
     start_scope()
@@ -40,7 +108,7 @@ def simulation(sim_params):
     NI = 160
     input_num = 100
     input_freq = 10 # Hz
-    sim_time = 0.1
+    sim_time = 5
     gmax = 100.0
     lr = 1e-2 
     Aminus = 1.0
@@ -92,13 +160,15 @@ def simulation(sim_params):
                                         '''
                                 )
     con_ee.connect(p=epsilon)
-
+    con_ee = 0.1
     # EI Plasticity
     con_ei = Synapses(Pe, Pi, on_pre="g_ampa += 0.3*nS")
     con_ei.connect(p=epsilon)
+    con_ei.w = 0.1
     #  II Plasticity
     con_ii = Synapses(Pi,Pi, on_pre="g_gaba += 3*nS")
     con_ii.connect(p=epsilon)
+    con_ii = 1.0
     # IE Plasiticty 
     ie_alpha_pre = sim_params[4]
     ie_alpha_post = sim_params[5]
@@ -127,6 +197,7 @@ def simulation(sim_params):
                                         '''
                         )
     con_ie.connect(p=epsilon)
+    con_ie = 1.0
     neurons.v = 0
     P = PoissonGroup(input_num, input_freq*Hz)
     S = Synapses(P, neurons, on_pre='g_ampa += 0.3*nS').connect(p=0.3)
@@ -162,14 +233,16 @@ def simulation(sim_params):
                                 'weights' : np.array(W_EE.w).copy()
                     }
     logger.info("Successfully completed run!!")
-    return  {'spikes_pe': spikes['Pe'],
+
+    return  metrics({'run_parameters': sim_params,
+         'spikes_pe': spikes['Pe'],
                 'spikes_pi' : spikes['Pi'],
                 'weights_ie' : weights['ie'],
                 'weights_ee' : weights['ee'],
                  'runtime' : sim_time,
                  't_start' : 0,#pre_simtime,
                  't_end' : sim_time,#pre_simtime+simtime,
-                 'dt' : float(defaultclock.dt)}
+                 'dt' : float(defaultclock.dt)})
         
 if __name__ == "__main__":
         # Create the argument parser
