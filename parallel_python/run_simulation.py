@@ -7,7 +7,7 @@ import numpy as np
 import h5py
 from collections.abc import Iterable
 logger = logging.getLogger(__name__)
-
+prefs.codegen.target = "numpy"
 def save_results(file_path, results):
     with h5py.File(file_path, 'w') as h:
         for k, v in results.items():
@@ -48,7 +48,7 @@ def metrics(result):
                 neuron_spikes[neuron_id].append(spike_times[i])
             return neuron_spikes
     
-    def rate_e(self, sim_data):
+    def rate_e(sim_data):
         ####################################
         # This method computes the global firing rate of the inhibitory neuron population
         # We access the spike data of the inibitory neurons
@@ -66,7 +66,7 @@ def metrics(result):
         rate = total_num_of_spikes / (num_neurons * sim_data['runtime'])
         return rate
     
-    def rate_i(self, sim_data):
+    def rate_i(sim_data):
         ####################################
         # This method computes the global firing rate of the inhibitory neuron population
         # We access the spike data of the inibitory neurons
@@ -84,13 +84,13 @@ def metrics(result):
         rate = total_num_of_spikes / (num_neurons * sim_data['runtime'])
         return rate
     
-    def weef(self, sim_data):
+    def weef(sim_data):
         """final mean EE weight"""
         w_trace = sim_data['weights']['ee']['weights']
         return np.mean(w_trace[:, -1])
          
 
-    def wief(self, sim_data):
+    def wief(sim_data):
         """final mean IE weight"""
         w_trace = sim_data['weights']['ie']['weights']
         return np.mean(w_trace[:, -1])
