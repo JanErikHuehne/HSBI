@@ -257,9 +257,11 @@ if __name__ == "__main__":
         args = parser.parse_args()
         sim_parameters = args.parameters
         sim_parameters = sim_parameters.split()
-        sim_parameters = [float(s) for s in sim_parameters]
+        run_id = int(sim_parameters[0])
+        
+        sim_parameters = [float(s) for s in sim_parameters[1:]]
         result = simulation(sim_parameters)
-
+        print(f"Running {run_id}")
         # now we save the raw simulation results 
 
         temp_sim_runs = Path(args.working_dir) / "raw_results"
