@@ -110,7 +110,7 @@ def simulation(sim_params):
     NI = 160
     input_num = 100
     input_freq = 10 # Hz
-    sim_time = 5
+    sim_time = 25
     gmax = 100.0
     lr = 1e-2 
     Aminus = 1.0
@@ -202,12 +202,13 @@ def simulation(sim_params):
     neurons.v = 0
     P = PoissonGroup(input_num, input_freq*Hz)
     S = Synapses(P, neurons, on_pre='g_ampa += 0.3*nS').connect(p=0.3)
+    run(sim_time * second)
     # Define monitors
     MPe = SpikeMonitor(Pe)
     MPi = SpikeMonitor(Pi)
     W_IE = StateMonitor(con_ie, 'w', record=True)
     W_EE = StateMonitor(con_ee, 'w', record=True)
-    run(sim_time * second)
+    run(5 * second)
     # Result retrieval
     spikes = {}
     times = MPe.t
@@ -261,7 +262,7 @@ if __name__ == "__main__":
         
         sim_parameters = [float(s) for s in sim_parameters[1:]]
         result = simulation(sim_parameters)
-        print(f"Running {run_id}")
+        logger.info(f"Running {run_id}")
         # now we save the raw simulation results 
 
         temp_sim_runs = Path(args.working_dir) / "raw_results"
