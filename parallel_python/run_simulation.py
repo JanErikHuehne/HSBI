@@ -94,12 +94,14 @@ def metrics(result):
         """final mean IE weight"""
         w_trace = sim_data['weights_ie']['weights']
         return np.mean(w_trace[:, -1])
-    result_ = {}
-    result_['rate_e'] = rate_e(result)
-    result_['rate_i'] = rate_i(result)
-    result_['wmean_ee'] = weef(result)
-    result_['wmean_ie'] = wief(result)
-    return result_
+    
+    result['rate_e'] = rate_e(result)
+    result['rate_i'] = rate_i(result)
+    result['wmean_ee'] = weef(result)
+    result['wmean_ie'] = wief(result)
+    del result['weights_ee']
+    del result['weights_ie']
+    return result
 def simulation(sim_params):
     logger.info("Starting simulation!!")
     start_scope()
@@ -232,7 +234,6 @@ def simulation(sim_params):
                                 'weights' : np.array(W_EE.w).copy()
                     }
     logger.info("Successfully completed run!!")
-
     return  metrics({'run_parameters': sim_params,
          'spikes_pe': spikes['Pe'],
                 'spikes_pi' : spikes['Pi'],
