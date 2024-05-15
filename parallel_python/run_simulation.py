@@ -17,7 +17,8 @@ def time_function(func):
         result = func(*args, **kwargs)
         end_time = time.perf_counter()
         elapsed = end_time - start_time
-        logger.error(f"{func.__name__} executed in {elapsed:.6f} seconds")
+        run_id = kwargs['run_id']
+        logger.error(f"{func.__name__}({run_id}) executed in {elapsed:.6f} seconds")
         return result
     return wrapper
 
@@ -116,7 +117,7 @@ def metrics(result):
     del result['weights_ie']
     return result
 @time_function
-def simulation(sim_params):
+def simulation(sim_params, run_id):
     logger.info("Starting simulation!!")
     start_scope()
     """Shared network parameters"""
@@ -275,7 +276,7 @@ if __name__ == "__main__":
         run_id = int(sim_parameters[0])
         
         sim_parameters = [float(s) for s in sim_parameters[1:]]
-        result = simulation(sim_parameters)
+        result = simulation(sim_parameters, run_id=run_id)
         logger.info(f"Running {run_id}")
         # now we save the raw simulation results 
 
