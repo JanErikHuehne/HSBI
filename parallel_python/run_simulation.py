@@ -16,7 +16,7 @@ def time_function(func):
         start_time = time.perf_counter()
         result = func(*args, **kwargs)
         end_time = time.perf_counter()
-        elapsed = start_time - end_time
+        elapsed = end_time - start_time
         logger.error(f"{func.__name__} executed in {elapsed:.6f} seconds")
         return result
     return wrapper
