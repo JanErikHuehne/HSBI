@@ -8,6 +8,7 @@ import h5py
 from collections.abc import Iterable
 import time 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 prefs.codegen.target = "numpy"
 
 def time_function(func): 
@@ -16,7 +17,7 @@ def time_function(func):
         result = func(*args, **kwargs)
         end_time = time.perf_counter()
         elapsed = start_time - end_time
-        logger.info(f"{func.__name__} executed in {elapsed:.6f} seconds")
+        logger.error(f"{func.__name__} executed in {elapsed:.6f} seconds")
         return result
     return wrapper
 
