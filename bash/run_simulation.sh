@@ -1,4 +1,4 @@
-
+SECONDS=0
 # Check if at least one parameter is provided (the working directory)
 if [ $# -lt 1 ]; then
     echo "Usage: $0 working_directory [plasticity parameters ...]"
@@ -18,3 +18,4 @@ fi
 
 python_script="parallel_python/run_simulation.py"
 python "$python_script" --working_dir "$working_directory" "$@"
+echo "Elapsed time: \$SECONDS seconds"
