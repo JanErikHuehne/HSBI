@@ -6,8 +6,20 @@ from pathlib import Path
 import numpy as np 
 import h5py
 from collections.abc import Iterable
+import time 
 logger = logging.getLogger(__name__)
 prefs.codegen.target = "numpy"
+
+def time_function(func): 
+    def wrapper(*args, **kwargs):
+        start_time = time.perf_counter()
+        result = func(*args, **kwargs)
+        end_time = time.perf_counter()
+        elapsed = start_time - end_time
+        logger.info(f"{func.__name__} executed in {elapsed:.6f} seconds")
+        return result
+    return wrapper
+
 def save_results(file_path, results):
     with h5py.File(file_path, 'w') as h:
         for k, v in results.items():
@@ -102,6 +114,7 @@ def metrics(result):
     del result['weights_ee']
     del result['weights_ie']
     return result
+@time_function
 def simulation(sim_params):
     logger.info("Starting simulation!!")
     start_scope()
