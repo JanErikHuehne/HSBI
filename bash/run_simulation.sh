@@ -18,4 +18,4 @@ fi
 
 python_script="parallel_python/run_simulation.py"
 python "$python_script" --working_dir "$working_directory" "$@"
-echo "Elapsed time: \$SECONDS seconds"
+echo "Elapsed time: $SECONDS seconds"
