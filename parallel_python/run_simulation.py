@@ -18,7 +18,9 @@ def time_function(func):
         end_time = time.perf_counter()
         elapsed = end_time - start_time
         run_id = kwargs['run_id']
-        logger.error(f"{func.__name__}({run_id}) executed in {elapsed:.6f} seconds")
+        import socket
+        host = socket.gethostname()
+        logger.error(f"{host}:{func.__name__}({run_id}) executed in {elapsed:.6f} seconds")
         return result
     return wrapper
 
