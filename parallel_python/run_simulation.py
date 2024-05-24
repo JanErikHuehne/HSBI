@@ -1,3 +1,5 @@
+import socket
+HOST = socket.gethostname()
 import argparse
 import brian2 as b2
 from brian2.units import *
@@ -8,10 +10,10 @@ import numpy as np
 import h5py
 from collections.abc import Iterable
 import time 
+logging.basicConfig(level=logging.INFO,
+                        format=f"run_simulation {HOST}(%(asctime)s) - %(levelname)s - %(message)s", datefmt="%H:%M:%S")
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 logger.setLevel(logging.INFO)
-
 b2.prefs.codegen.target = "numpy"
 
 def time_function(func): 
@@ -283,7 +285,7 @@ if __name__ == "__main__":
         
         sim_parameters = [float(s) for s in sim_parameters[1:]]
         result = simulation(sim_parameters, run_id=run_id)
-        logger.error(f"Result {result['rate_e']} {result['rate_i']} for {result['run_parameters'][-2:]}")
+        logger.info(f"Result {result['rate_e']} {result['rate_i']} for {result['run_parameters'][-2:]}")
         
         # now we save the raw simulation results 
 
