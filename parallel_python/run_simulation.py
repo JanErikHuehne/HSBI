@@ -9,7 +9,9 @@ import h5py
 from collections.abc import Iterable
 import time 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
+logger.setLevel(logging.INFO)
+
 b2.prefs.codegen.target = "numpy"
 
 def time_function(func): 
@@ -21,7 +23,7 @@ def time_function(func):
         run_id = kwargs['run_id']
         import socket
         host = socket.gethostname()
-        logger.error(f"{host}:{func.__name__}({run_id}) executed in {elapsed:.6f} seconds")
+        logger.info(f"{host}:{func.__name__}({run_id}) executed in {elapsed:.6f} seconds")
         return result
     return wrapper
 
@@ -121,7 +123,6 @@ def metrics(result):
     return result
 @time_function
 def simulation(sim_params, run_id):
-    logger.error("Starting simulation!!")
     b2.start_scope()
     """Shared network parameters"""
     NE = 200
@@ -255,7 +256,6 @@ def simulation(sim_params, run_id):
                                 'to' : 'Pe',
                                 'weights' : np.array(W_EE.w).copy()
                     }
-    logger.error("Successfully completed run!!")
     return  metrics({'run_parameters': sim_params,
          'spikes_pe': spikes['Pe'],
                 'spikes_pi' : spikes['Pi'],
@@ -283,7 +283,7 @@ if __name__ == "__main__":
         
         sim_parameters = [float(s) for s in sim_parameters[1:]]
         result = simulation(sim_parameters, run_id=run_id)
-        logger.error(f"Result {result['rate_e']} {result['rate_i']}")
+        logger.error(f"Result {result['rate_e']} {result['rate_i']} for {result['sim_params'][-2:]}")
         
         # now we save the raw simulation results 
 
