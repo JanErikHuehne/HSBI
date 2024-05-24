@@ -121,7 +121,7 @@ def metrics(result):
     return result
 @time_function
 def simulation(sim_params, run_id):
-    logger.info("Starting simulation!!")
+    logger.error("Starting simulation!!")
     b2.start_scope()
     """Shared network parameters"""
     NE = 200
@@ -255,7 +255,7 @@ def simulation(sim_params, run_id):
                                 'to' : 'Pe',
                                 'weights' : np.array(W_EE.w).copy()
                     }
-    logger.info("Successfully completed run!!")
+    logger.error("Successfully completed run!!")
     return  metrics({'run_parameters': sim_params,
          'spikes_pe': spikes['Pe'],
                 'spikes_pi' : spikes['Pi'],
@@ -283,7 +283,8 @@ if __name__ == "__main__":
         
         sim_parameters = [float(s) for s in sim_parameters[1:]]
         result = simulation(sim_parameters, run_id=run_id)
-        logger.info(f"Running {run_id}")
+        logger.error(f"Result {result}")
+        
         # now we save the raw simulation results 
 
         temp_sim_runs = Path(args.working_dir) / "raw_results"
