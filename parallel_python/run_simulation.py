@@ -1,5 +1,6 @@
 import argparse
-from brian2 import *
+import brian2 as b2
+from brian2.units import *
 import logging
 import os 
 from pathlib import Path
@@ -8,8 +9,8 @@ import h5py
 from collections.abc import Iterable
 import time 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-prefs.codegen.target = "numpy"
+logger.setLevel(logging.DEBUG)
+b2.prefs.codegen.target = "numpy"
 
 def time_function(func): 
     def wrapper(*args, **kwargs):
@@ -121,12 +122,12 @@ def metrics(result):
 @time_function
 def simulation(sim_params, run_id):
     logger.info("Starting simulation!!")
-    start_scope()
+    b2.start_scope()
     """Shared network parameters"""
     NE = 200
-    NI = 160
+    NI = NE / 4
     input_num = 100
-    input_freq = 10 # Hz
+    input_freq = 30 # Hz
     sim_time = 25
     gmax = 100.0
     lr = 1e-2 
@@ -146,7 +147,7 @@ def simulation(sim_params, run_id):
                 dg_ampa/dt = -g_ampa/tau_ampa : siemens
                 dg_gaba/dt = -g_gaba/tau_gaba : siemens
                 '''
-    neurons = NeuronGroup(NE+NI, model=eqs_neurons, threshold='v > vt',
+    neurons = b2.NeuronGroup(NE+NI, model=eqs_neurons, threshold='v > vt',
                              reset='v=el', refractory=5*ms, method='euler')
     Pe = neurons[:NE]
     Pi = neurons[NE:]
@@ -154,10 +155,11 @@ def simulation(sim_params, run_id):
     # EE plasticity 
     ee_alpha_pre = sim_params[0]
     ee_alpha_post = sim_params[1]
-    ee_tauplus_stdp = sim_params[2] * ms
-    ee_tauminus_stdp = sim_params[3] * ms
+    ee_Aplus = sim_params[2]
+    ee_tauplus_stdp = sim_params[3] * ms
+    ee_tauminus_stdp = sim_params[4] * ms
     ee_Aminus = -1.0
-    ee_Aplus = ee_tauminus_stdp / ee_tauplus_stdp
+  
     synapse_model ='''
                 w : 1
                 dee_trace_pre_plus/dt = -ee_trace_pre_plus / ee_tauplus_stdp : 1 (event-driven)
@@ -165,7 +167,7 @@ def simulation(sim_params, run_id):
                 dee_trace_post_plus/dt = -ee_trace_post_plus / ee_tauplus_stdp : 1 (event-driven)
                 dee_trace_post_minus/dt = -ee_trace_post_minus / ee_tauminus_stdp : 1 (event-driven)
     '''
-    con_ee = Synapses(Pe, Pe, model=synapse_model,
+    con_ee = b2.Synapses(Pe, Pe, model=synapse_model,
                                 on_pre='''
                                         g_ampa += w*nS
                                         ee_trace_pre_plus += 1.0
@@ -181,18 +183,19 @@ def simulation(sim_params, run_id):
     con_ee.connect(p=epsilon)
     con_ee.w = 0.1
     # EI Plasticity
-    con_ei = Synapses(Pe, Pi, on_pre="g_ampa += 0.1*nS")
+    con_ei = b2.Synapses(Pe, Pi, on_pre="g_ampa += 0.1*nS")
     con_ei.connect(p=epsilon)
    
     #  II Plasticity
-    con_ii = Synapses(Pi,Pi, on_pre="g_gaba += 1*nS")
+    con_ii = b2.Synapses(Pi,Pi, on_pre="g_gaba += 1*nS")
     con_ii.connect(p=epsilon)
     # IE Plasiticty 
-    ie_alpha_pre = sim_params[4]
-    ie_alpha_post = sim_params[5]
-    ie_tauplus_stdp = sim_params[6] * ms
-    ie_tauminus_stdp = sim_params[7] * ms
-    ie_Aplus =  ie_tauminus_stdp / ie_tauplus_stdp
+    ie_alpha_pre = sim_params[5]
+    ie_alpha_post = sim_params[6]
+    ie_Aplus =  sim_params[7]
+    ie_tauplus_stdp = sim_params[8] * ms
+    ie_tauminus_stdp = sim_params[9] * ms
+   
     ie_Aminus = -1.0
     synapse_model ='''
                 w : 1
@@ -201,7 +204,7 @@ def simulation(sim_params, run_id):
                 die_trace_post_plus/dt = -ie_trace_post_plus / ie_tauplus_stdp : 1 (event-driven)
                 die_trace_post_minus/dt = -ie_trace_post_minus / ie_tauminus_stdp : 1 (event-driven)
                 '''
-    con_ie = Synapses(Pi, Pe, model=synapse_model,
+    con_ie = b2.Synapses(Pi, Pe, model=synapse_model,
                                 on_pre='''
                                         g_gaba += w*nS
                                         ie_trace_pre_plus += 1.0
@@ -217,15 +220,16 @@ def simulation(sim_params, run_id):
     con_ie.connect(p=epsilon)
     con_ie.w = 1.0
     neurons.v = 0
-    P = PoissonGroup(input_num, input_freq*Hz)
-    S = Synapses(P, neurons, on_pre='g_ampa += 0.3*nS').connect(p=0.3)
-    run(sim_time * second)
+    P = b2.PoissonGroup(input_num, input_freq*Hz)
+    # We only input to the exitatory population 
+    S = b2.Synapses(P, Pe, on_pre='g_ampa += 0.3*nS').connect(p=0.3)
+    b2.run(sim_time * second)
     # Define monitors
-    MPe = SpikeMonitor(Pe)
-    MPi = SpikeMonitor(Pi)
-    W_IE = StateMonitor(con_ie, 'w', record=True)
-    W_EE = StateMonitor(con_ee, 'w', record=True)
-    run(5 * second)
+    MPe = b2.SpikeMonitor(Pe)
+    MPi = b2.SpikeMonitor(Pi)
+    W_IE = b2.StateMonitor(con_ie, 'w', record=True)
+    W_EE = b2.StateMonitor(con_ee, 'w', record=True)
+    b2.run(5 * second)
     # Result retrieval
     spikes = {}
     times = MPe.t
@@ -260,7 +264,7 @@ def simulation(sim_params, run_id):
                  'runtime' : sim_time,
                  't_start' : 0,#pre_simtime,
                  't_end' : sim_time,#pre_simtime+simtime,
-                 'dt' : float(defaultclock.dt)})
+                 'dt' : float(b2.defaultclock.dt)})
         
 if __name__ == "__main__":
         # Create the argument parser
