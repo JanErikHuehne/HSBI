@@ -184,13 +184,12 @@ def simulation(sim_params, run_id):
     con_ee.connect(p=epsilon)
     con_ee.w = 0.2
     # EI Plasticity
-    con_ei = b2.Synapses(Pe, Pi, on_pre="g_ampa += 0.1*nS")
+    con_ei = b2.Synapses(Pe, Pi, on_pre="g_ampa += 0.2*nS")
     con_ei.connect(p=epsilon)
-    con_ei.w = 0.2
+   
     #  II Plasticity
     con_ii = b2.Synapses(Pi,Pi, on_pre="g_gaba += 1*nS")
     con_ii.connect(p=epsilon)
-    con_ii.w = 1.0
     # IE Plasiticty 
     ie_alpha_pre = sim_params[5]
     ie_alpha_post = sim_params[6]
