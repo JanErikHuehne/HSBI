@@ -283,7 +283,7 @@ if __name__ == "__main__":
         
         sim_parameters = [float(s) for s in sim_parameters[1:]]
         result = simulation(sim_parameters, run_id=run_id)
-        logger.error(f"Result {result}")
+        logger.error(f"Result {result['rate_e']} {result['rate_i']}")
         
         # now we save the raw simulation results 
 
