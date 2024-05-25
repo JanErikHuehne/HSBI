@@ -10,7 +10,6 @@ import numpy as np
 import h5py
 from collections.abc import Iterable
 import time 
-from scipy.signal import correlate
 logging.basicConfig(level=logging.INFO,
                         format=f"run_simulation {HOST}(%(asctime)s) - %(levelname)s - %(message)s", datefmt="%H:%M:%S")
 logger = logging.getLogger(__name__)
@@ -204,35 +203,7 @@ def metrics(result):
             stds.append(std)
         return np.mean(stds)
 
-    def auto_cov(sim_data):
-        """
-        autocov of the spike train
-        Spike trains are binned in a time window of 10ms
-        autocov for each neuron is computed and normalized between -500 and 500 ms
-        Mean area under the curve is computed and averaged over neurons
-        """
-        grouped_spikes_e = extract_neuron_spikes(sim_data['spikes_pe']['times'], sim_data['spikes_pe']['neurons'])
-        grouped_spikes_i = extract_neuron_spikes(sim_data['spikes_pi']['times'], sim_data['spikes_pi']['neurons'])
-        tbins = np.arange(sim_data['t_start'], sim_data['t_end'], bin_size_medium)
-        binned = np.empty(shape=(0, len(tbins)-1))
-        # exitatory
-        for spike_train in grouped_spikes_e.values():
-            binned_spike_train = np.histogram(spike_train, tbins)[0]
-            binned = np.vstack([binned, binned_spike_train])
 
-        # inhibitory
-        for spike_train in grouped_spikes_i.values():
-            binned_spike_train = np.histogram(spike_train, tbins)[0]
-            binned = np.vstack([binned, binned_spike_train])
-        # Correlate
-        lags = int( window_view_auto_cov / bin_size_medium)
-        aoc = []
-        for x in binned:
-            x_corr = correlate(x - x.mean(), x- x.mean(), mode='full')
-            # normalize
-            x_corr = np.abs(x_corr) / x_corr.max()
-            aoc.append(np.mean(x_corr[(x_corr.size//2-(lags)):(x_corr.size//2+(lags+1))]))
-        return np.mean(aoc)
     
     def averaged_fano_spatial(sim_data):
         tbins = np.arange(sim_data['t_start'], sim_data['t_end'], bin_size_big)
@@ -296,7 +267,6 @@ def metrics(result):
     result['cv_isi'] = cv_isi(result)
     result['std_fr'] = std_fr(result)
     result['std_rate_spatial'] = std_fr_s(result)
-    result['auto_cov'] = auto_cov(result)
     result['mean_fano_s'] = averaged_fano_spatial(result)
     result['mean_fano_t'] = averaged_fano_time(result)
     # We delete the raw data so its not saved, simulations can be repeated with the given seed
