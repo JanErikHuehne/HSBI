@@ -472,9 +472,7 @@ if __name__ == "__main__":
         run_id = int(sim_parameters[0])
         
         sim_parameters = [float(s) for s in sim_parameters[1:]]
-        result = simulation(sim_parameters, run_id=run_id)
-        logger.info(f"Result {result['rate_e']} {result['rate_i']} for {result['run_parameters'][-2:]}")
-        
+        result = simulation(sim_parameters, run_id=run_id)        
         # now we save the raw simulation results 
 
         temp_sim_runs = Path(args.working_dir) / "raw_results"
