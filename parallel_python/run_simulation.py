@@ -444,7 +444,7 @@ if __name__ == "__main__":
         sim_parameters = [float(s) for s in sim_parameters[1:]]
         result = simulation(sim_parameters, run_id=run_id)        
         # now we save the raw simulation results 
-
+        logger.info(f"{result['rate_e']} {result['rate_i']} {result['wmean_ee']} {result['wmean_ie']} {result['f_w-blow']} {result['cv_isi']} {result['std_fr']} {result['std_rate_spatial']} {result['mean_fano_s']} {result['mean_fano_t']}")
         temp_sim_runs = Path(args.working_dir) / "raw_results"
         os.makedirs(temp_sim_runs, exist_ok=True)
 
