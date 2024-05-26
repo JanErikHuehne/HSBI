@@ -153,8 +153,9 @@ def metrics(result):
         grouped_spikes = extract_neuron_spikes(t_spikes, neuron_ids)
         var_isi_val = []
         for key,val in zip(grouped_spikes.keys(), grouped_spikes.values()):
-            isi = np.std(np.diff(val)) / np.mean(np.diff(val))
-            var_isi_val.append(isi)
+            if len(val) > 2:
+                isi = np.std(np.diff(val)) / np.mean(np.diff(val))
+                var_isi_val.append(isi)
         return np.mean(var_isi_val)
     
     def wief(sim_data):
