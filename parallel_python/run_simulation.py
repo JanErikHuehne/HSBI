@@ -451,6 +451,7 @@ if __name__ == "__main__":
 
         import hashlib 
         import random
+        """
         ex = True
         while ex: 
                 h = hashlib.sha3_256()
@@ -460,6 +461,11 @@ if __name__ == "__main__":
                 file = temp_sim_runs / run_id
                 if not file.exists():
                         ex = False
+        """
+        h = hashlib.sha3_256()
+        h.update(str.encode(str(random.random())))
+        run_id = str(h.hexdigest()) + ".hdf5"
+        file = temp_sim_runs / run_id
         print(f"Saving results to {file}")
         save_results(file, result)
        
