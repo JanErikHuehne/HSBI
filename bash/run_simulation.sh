@@ -15,6 +15,6 @@ if [ ! -d "$working_directory" ]; then
     exit 1
 fi
 
-
+cd "$working_directory"
 python_script="parallel_python/run_simulation.py"
 python "$python_script" --working_dir "$working_directory" "$@"
