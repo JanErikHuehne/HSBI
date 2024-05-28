@@ -7,16 +7,12 @@ fi
 
 working_directory="$1"
 shift 
-git_directory="$1"
-shift 
 
 # Check if the working directory is a valid directory
 if [ ! -d "$working_directory" ]; then
     echo "Error: Provided working directory '$working_directory' does not exist or is not a directory."
     exit 1
 fi
-
-cd "$git_directory" || exit 1
 echo "$(pwd)"
 python_script="parallel_python/run_simulation.py"
 python "$python_script" --working_dir "$working_directory" "$@"
