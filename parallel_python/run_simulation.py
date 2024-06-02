@@ -293,18 +293,17 @@ def simulation(sim_params, run_id, seed=None):
     gmax = 20.0
     lr = 1e-2 
     Aminus = 1.0
-    epsilon = 0.1
+    epsilon = 0.2
     gl = 10 * nS
     er = -80 * mV
     el = - 60 * mV
     tau_gaba = 10.0 *ms
     tau_ampa = 5.0 * ms
     vt = -50 * mV
-    bgcurrent = 200 * pA
         
     memc = 200 * pfarad
     eqs_neurons='''
-                dv/dt=(-gl*(v-el)-(g_ampa*v+g_gaba*(v-er))+bgcurrent)/memc : volt (unless refractory)
+                dv/dt=(-gl*(v-el)-(g_ampa*v+g_gaba*(v-er)))/memc : volt (unless refractory)
                 dg_ampa/dt = -g_ampa/tau_ampa : siemens
                 dg_gaba/dt = -g_gaba/tau_gaba : siemens
                 '''
