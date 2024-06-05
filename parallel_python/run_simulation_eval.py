@@ -412,6 +412,8 @@ def simulation(sim_params, run_id, seed=None, run_dir=None):
     pre_neurons =  np.array(con_ie.i)
     post_neurons = np.array(con_ie.j)
     # Create a sparse COO matrix representing the synaptic connections
+    print(post_neurons.max())
+    print(pre_neurons.max())
     weight_matrix_sparse = coo_matrix((weights, (post_neurons, pre_neurons)), shape=(100, 400))
     # Convert sparse matrix to a dense matrix
     weight_matrix = weight_matrix_sparse.toarray()
