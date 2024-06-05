@@ -11,6 +11,7 @@ import h5py
 from collections.abc import Iterable
 import time 
 from matplotlib import pyplot as plt 
+from scipy.sparse import coo_matrix
 logging.basicConfig(level=logging.INFO,
                         format=f"run_simulation {HOST}(%(asctime)s) - %(levelname)s - %(message)s", datefmt="%H:%M:%S")
 logger = logging.getLogger(__name__)
@@ -390,7 +391,14 @@ def simulation(sim_params, run_id, seed=None, run_dir=None):
     W_IE = b2.StateMonitor(con_ie, 'w', record=True, dt=0.1*second)
     W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=0.1*second)
     # Extract the weight matrix
-    weight_matrix = np.array(con_ee.w)
+    weights = np.array(con_ee.w)
+    pre_neurons =  np.array(con_ee.i)
+    post_neurons = np.array(con_ee.j)
+    # Create a sparse COO matrix representing the synaptic connections
+    weight_matrix_sparse = coo_matrix((weights, (post_neurons, pre_neurons)), shape=(400, 400))
+
+    # Convert sparse matrix to a dense matrix
+    weight_matrix = weight_matrix_sparse.toarray()
     # Plot the weight matrix
     plt.figure(figsize=(8, 6))
     plt.imshow(weight_matrix, cmap='viridis', interpolation='nearest')
@@ -400,7 +408,13 @@ def simulation(sim_params, run_id, seed=None, run_dir=None):
     plt.ylabel('Postsynaptic Neuron')
     plt.savefig(str(run_dir  / "weights_ee_t0.png"))
     plt.clf()
-    weight_matrix = np.array(con_ie.w)
+    weights = np.array(con_ie.w)
+    pre_neurons =  np.array(con_ie.i)
+    post_neurons = np.array(con_ie.j)
+    # Create a sparse COO matrix representing the synaptic connections
+    weight_matrix_sparse = coo_matrix((weights, (post_neurons, pre_neurons)), shape=(100, 100))
+    # Convert sparse matrix to a dense matrix
+    weight_matrix = weight_matrix_sparse.toarray()
     # Plot the weight matrix
     plt.figure(figsize=(8, 6))
     plt.imshow(weight_matrix, cmap='viridis', interpolation='nearest')
@@ -503,7 +517,13 @@ def simulation(sim_params, run_id, seed=None, run_dir=None):
     ax2.legend()
     plt.savefig(str(run_dir / "results.png"))
     plt.clf()
-    weight_matrix = np.array(con_ee.w)
+    weights = np.array(con_ee.w)
+    pre_neurons =  np.array(con_ee.i)
+    post_neurons = np.array(con_ee.j)
+    # Create a sparse COO matrix representing the synaptic connections
+    weight_matrix_sparse = coo_matrix((weights, (post_neurons, pre_neurons)), shape=(400, 400))
+    # Convert sparse matrix to a dense matrix
+    weight_matrix = weight_matrix_sparse.toarray()
     # Plot the weight matrix
     plt.figure(figsize=(8, 6))
     plt.imshow(weight_matrix, cmap='viridis', interpolation='nearest')
@@ -514,7 +534,14 @@ def simulation(sim_params, run_id, seed=None, run_dir=None):
     plt.savefig(str(run_dir  / "weights_ee_t80.png"))
     plt.clf()
 
-    weight_matrix = np.array(con_ie.w)
+    weights = np.array(con_ie.w)
+    pre_neurons =  np.array(con_ie.i)
+    post_neurons = np.array(con_ie.j)
+    # Create a sparse COO matrix representing the synaptic connections
+    weight_matrix_sparse = coo_matrix((weights, (post_neurons, pre_neurons)), shape=(100, 100))
+
+    # Convert sparse matrix to a dense matrix
+    weight_matrix = weight_matrix_sparse.toarray()
     # Plot the weight matrix
     plt.figure(figsize=(8, 6))
     plt.imshow(weight_matrix, cmap='viridis', interpolation='nearest')
