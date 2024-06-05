@@ -55,7 +55,11 @@ def save_results(file_path, results):
                 else:
                     h.create_dataset(k, data=str(v))
 
-
+def kernel(Aplus, t_plus, t_minus, Aminus=-1.0, tp=np.linspace(start=0, stop=1, num=10000)):
+    v_p = Aplus * np.exp(- tp / t_plus) + Aminus * np.exp(-tp / t_minus)
+    tp_n = - tp 
+    v_n = Aplus * np.exp(tp_n / t_plus) + Aminus * np.exp(tp_n / t_minus)
+    return (tp_n, v_n), (tp, v_p)
 def extract_neuron_spikes(spike_times, neuron_ids):
             neuron_spikes = {}
             for i in range(len(neuron_ids)):
@@ -458,9 +462,34 @@ def simulation(sim_params, run_id, seed=None, run_dir=None):
                                 'weights' : np.array(W_EE.w).copy()
                     }
     fig = plt.figure(figsize=(30, 10))
-    gs = fig.add_gridspec(2, 1)
-    ax1 = fig.add_subplot(gs[0])
-    ax2 = fig.add_subplot(gs[1])
+    gs = fig.add_gridspec(1, 4)
+    ax0_0 = fig.add_subplot(gs[0])
+    ax0_1 = fig.add_subplot(gs[1])
+    ax1 = fig.add_subplot(gs[2])
+    ax2 = fig.add_subplot(gs[3])
+
+    (xn1, yn1), (xp1, yp1) = kernel(sim_params[2], sim_params[3], sim_params[4])
+    (xn2, yn2), (xp2, yp2) = kernel(sim_params[7], sim_params[8], sim_params[9])
+    B_EE = sim_params[2] * sim_params[3] - sim_params[4]
+    B_IE = sim_params[7] * sim_params[8] - sim_params[9]
+    ax0_0.set_title("Ex-Ex")
+    ax0_0.plot(xn1, yn1, "r", linewidth=3)
+    ax0_0.plot(xp1, yp1, "r", linewidth=3)
+    ax0_0.set_xlim([-0.1, 0.1])
+    ax0_0.axhline(y=0, color='black',  linewidth=2)  # horiziontal line y=0
+    ax0_0.axvline(x=0, color='black',  linewidth=2)  # vericle line x=0
+    ax0_0.text(0.5, 1.1, r"$\alpha_{pre} $" + " = {:.2f}".format(sim_params[0])  + r"  $\alpha_{post}$" + " = {:.2f}".format(sim_params[1]) + " B = {:.4f}".format(B_EE), fontsize=20, color='black', 
+          horizontalalignment='center', verticalalignment='top', transform=ax0_left.transAxes)
+
+
+    ax0_1.set_title("Inh-Ex")
+    ax0_1.plot(xn2, yn2, "b", linewidth=3)
+    ax0_1.plot(xp2, yp2, "b", linewidth=3)
+    ax0_1.set_xlim([-0.1, 0.1])
+    ax0_1.axhline(y=0, color='black', linewidth=2)  # horiziontal line y=0
+    ax0_1.axvline(x=0, color='black',  linewidth=2)  # vericle line x=0
+    ax0_1.text(0.5, 1.1, r"$\alpha_{pre} $" + " = {:.2f}".format(sim_params[5])  + r"  $\alpha_{post}$" + " = {:.2f}".format(sim_params[6]) + " B = {:.4f}".format(B_IE), fontsize=20, color='black', 
+         horizontalalignment='center', verticalalignment='top', transform=ax0_right.transAxes)
     num_neurons = 400
     num_neurons_i = 100
     # spike times
@@ -516,6 +545,7 @@ def simulation(sim_params, run_id, seed=None, run_dir=None):
     ax2.set_xlabel('Time (s)')
     ax2.set_ylabel('Weights')
     ax2.grid()
+    ax2.set_yscale('log')
     ax2.legend()
     plt.savefig(str(run_dir / "results.png"))
     plt.clf()
@@ -555,7 +585,8 @@ def simulation(sim_params, run_id, seed=None, run_dir=None):
     plt.clf()
     with open(str(run_dir / "parameters.txt"), "w") as f:
         string_parm_list = ['{:.10f}'.format(x) for x in sim_parameters]
-        f.write(string_parm_list)
+        string_parm = " ".join(string_parm_list)
+        f.write(string_parm)
 
     return  metrics({'run_parameters': sim_params,
          'spikes_pe': spikes['Pe'],
