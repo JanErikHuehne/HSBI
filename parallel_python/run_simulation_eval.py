@@ -479,7 +479,7 @@ def simulation(sim_params, run_id, seed=None, run_dir=None):
     ax0_0.axhline(y=0, color='black',  linewidth=2)  # horiziontal line y=0
     ax0_0.axvline(x=0, color='black',  linewidth=2)  # vericle line x=0
     ax0_0.text(0.5, 1.1, r"$\alpha_{pre} $" + " = {:.2f}".format(sim_params[0])  + r"  $\alpha_{post}$" + " = {:.2f}".format(sim_params[1]) + " B = {:.4f}".format(B_EE), fontsize=20, color='black', 
-          horizontalalignment='center', verticalalignment='top', transform=ax0_left.transAxes)
+          horizontalalignment='center', verticalalignment='top', transform=ax0_0.transAxes)
 
 
     ax0_1.set_title("Inh-Ex")
@@ -489,7 +489,7 @@ def simulation(sim_params, run_id, seed=None, run_dir=None):
     ax0_1.axhline(y=0, color='black', linewidth=2)  # horiziontal line y=0
     ax0_1.axvline(x=0, color='black',  linewidth=2)  # vericle line x=0
     ax0_1.text(0.5, 1.1, r"$\alpha_{pre} $" + " = {:.2f}".format(sim_params[5])  + r"  $\alpha_{post}$" + " = {:.2f}".format(sim_params[6]) + " B = {:.4f}".format(B_IE), fontsize=20, color='black', 
-         horizontalalignment='center', verticalalignment='top', transform=ax0_right.transAxes)
+         horizontalalignment='center', verticalalignment='top', transform=ax0_1.transAxes)
     num_neurons = 400
     num_neurons_i = 100
     # spike times
