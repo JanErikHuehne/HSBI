@@ -507,6 +507,9 @@ def simulation(sim_params, run_id, seed=None, run_dir=None):
     ee_w = np.array(W_EE.w)
     std_ee_w = np.std(ee_w, axis=0)
     mean_ee_w = np.mean(ee_w, axis=0)
+    print(mean_ee_w.shape)
+    print(std_ee_w.shape)
+    print(tbins.shape)
     time_steps = np.arange(start=0, stop=sim_time+5,  step=0.1)[:len(mean_ee_w)]
     ax2.plot(time_steps, mean_ee_w, "r")
     ax2.fill_between(tbins[:-1], mean_ee_w-std_ee_w, mean_ee_w+std_ee_w,facecolor='red', alpha=0.2, label="Exitatory")
