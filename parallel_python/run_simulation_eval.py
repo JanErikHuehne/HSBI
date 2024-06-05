@@ -11,7 +11,6 @@ import h5py
 from collections.abc import Iterable
 import time 
 from matplotlib import pyplot as plt 
-from brian2tools import *
 logging.basicConfig(level=logging.INFO,
                         format=f"run_simulation {HOST}(%(asctime)s) - %(levelname)s - %(message)s", datefmt="%H:%M:%S")
 logger = logging.getLogger(__name__)
