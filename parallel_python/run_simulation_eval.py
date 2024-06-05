@@ -475,7 +475,7 @@ def simulation(sim_params, run_id, seed=None, run_dir=None):
     ax0_0.set_title("Ex-Ex")
     ax0_0.plot(xn1, yn1, "r", linewidth=3)
     ax0_0.plot(xp1, yp1, "r", linewidth=3)
-    ax0_0.set_xlim([-0.1, 0.1])
+    ax0_0.set_xlim([-0.2, 0.2])
     ax0_0.axhline(y=0, color='black',  linewidth=2)  # horiziontal line y=0
     ax0_0.axvline(x=0, color='black',  linewidth=2)  # vericle line x=0
     ax0_0.text(0.5, 1.1, r"$\alpha_{pre} $" + " = {:.2f}".format(sim_params[0])  + r"  $\alpha_{post}$" + " = {:.2f}".format(sim_params[1]) + " B = {:.4f}".format(B_EE), fontsize=20, color='black', 
@@ -485,7 +485,7 @@ def simulation(sim_params, run_id, seed=None, run_dir=None):
     ax0_1.set_title("Inh-Ex")
     ax0_1.plot(xn2, yn2, "b", linewidth=3)
     ax0_1.plot(xp2, yp2, "b", linewidth=3)
-    ax0_1.set_xlim([-0.1, 0.1])
+    ax0_1.set_xlim([-0.2, 0.2])
     ax0_1.axhline(y=0, color='black', linewidth=2)  # horiziontal line y=0
     ax0_1.axvline(x=0, color='black',  linewidth=2)  # vericle line x=0
     ax0_1.text(0.5, 1.1, r"$\alpha_{pre} $" + " = {:.2f}".format(sim_params[5])  + r"  $\alpha_{post}$" + " = {:.2f}".format(sim_params[6]) + " B = {:.4f}".format(B_IE), fontsize=20, color='black', 
@@ -587,7 +587,7 @@ def simulation(sim_params, run_id, seed=None, run_dir=None):
         string_parm_list = ['{:.10f}'.format(x) for x in sim_parameters]
         string_parm = " ".join(string_parm_list)
         f.write(string_parm)
-
+    """
     return  metrics({'run_parameters': sim_params,
          'spikes_pe': spikes['Pe'],
                 'seed' : seed,
@@ -598,6 +598,8 @@ def simulation(sim_params, run_id, seed=None, run_dir=None):
                  't_start' : sim_time,#pre_simtime,
                  't_end' : sim_time + 5,#pre_simtime+simtime,
                  'dt' : float(b2.defaultclock.dt)})
+    """
+    return None
         
 if __name__ == "__main__":
       
