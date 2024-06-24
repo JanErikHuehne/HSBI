@@ -287,7 +287,7 @@ def simulation(sim_params, run_id, seed=None):
     """Shared network parameters"""
     NE = 400
     NI = NE / 4
-    input_num = 400
+    input_num = 40
     input_freq = 30 # Hz
     sim_time = 25
     gmax = 20.0
