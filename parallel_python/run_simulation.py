@@ -438,7 +438,7 @@ if __name__ == "__main__":
         parser.add_argument("--working_dir", type=str)
         parser.add_argument('parameters', metavar='simulation_parameters', type=str,
                                 help='list of simulation parameters')
-        
+
         # Parse the arguments
         args = parser.parse_args()
         sim_parameters = args.parameters
@@ -446,9 +446,9 @@ if __name__ == "__main__":
         run_id = int(sim_parameters[0])
         
         sim_parameters = [float(s) for s in sim_parameters[1:]]
-        
+        logger.info("Running with {}".format(sim_parameters)) 
         result = simulation(sim_parameters, run_id=run_id)    
-        logger.info(result)    
+        
         # now we save the raw simulation results 
         logger.info(f"{result['rate_e']} {result['rate_i']} {result['wmean_ee']} {result['wmean_ie']} {result['f_w-blow']} {result['cv_isi']} {result['std_fr']} {result['std_rate_spatial']} {result['mean_fano_s']} {result['mean_fano_t']}")
         temp_sim_runs = Path(args.working_dir) / "raw_results"
