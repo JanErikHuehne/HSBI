@@ -154,7 +154,7 @@ def metrics(result):
         var_isi_val = []
         for key,val in zip(grouped_spikes.keys(), grouped_spikes.values()):
             if len(val) > 5:
-                print("Calculating ISI")
+    
                 isi = np.std(np.diff(val)) / np.mean(np.diff(val))
                 var_isi_val.append(isi)
         if var_isi_val:
