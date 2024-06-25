@@ -153,10 +153,14 @@ def metrics(result):
         grouped_spikes = extract_neuron_spikes(t_spikes, neuron_ids)
         var_isi_val = []
         for key,val in zip(grouped_spikes.keys(), grouped_spikes.values()):
-            if len(val) > 2:
+            if len(val) > 5:
+                print("Calculating ISI")
                 isi = np.std(np.diff(val)) / np.mean(np.diff(val))
                 var_isi_val.append(isi)
-        return np.mean(var_isi_val)
+        if var_isi_val:
+            return np.mean(var_isi_val)
+        else:
+            return 0.0
     
     def wief(sim_data):
         """final mean IE weight"""
@@ -442,8 +446,9 @@ if __name__ == "__main__":
         run_id = int(sim_parameters[0])
         
         sim_parameters = [float(s) for s in sim_parameters[1:]]
-        logger.info(f"Running simulation with {sim_parameters}")
-        result = simulation(sim_parameters, run_id=run_id)        
+        
+        result = simulation(sim_parameters, run_id=run_id)    
+        logger.info(result)    
         # now we save the raw simulation results 
         logger.info(f"{result['rate_e']} {result['rate_i']} {result['wmean_ee']} {result['wmean_ie']} {result['f_w-blow']} {result['cv_isi']} {result['std_fr']} {result['std_rate_spatial']} {result['mean_fano_s']} {result['mean_fano_t']}")
         temp_sim_runs = Path(args.working_dir) / "raw_results"
