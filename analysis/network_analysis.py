@@ -31,6 +31,7 @@ def time_function(func):
 
 @time_function
 def network_run(sim_params, working_directory):
+    logger.info(f"Running in  {working_directory}")
     b2.start_scope()
     """Shared network parameters"""
     NE = 400
@@ -129,7 +130,7 @@ def network_run(sim_params, working_directory):
     S = b2.PoissonInput(Pe, N=input_num, target_var="g_ampa", rate=20*Hz, weight=0.4*nS)
     results = {}
    
-    b2.run(10 * second)
+    b2.run(10 * second, report='text')
     # First Recording Window
     MPe_All = b2.SpikeMonitor(Pe)
     MPi_All = b2.SpikeMonitor(Pi)
@@ -151,13 +152,13 @@ def network_run(sim_params, working_directory):
     # We reset the spike monitors 
     del MPe_All, MPi_All, W_IE, W_EE
     # we run without monitoring
-    b2.run(30 * second)
+    b2.run(30 * second, report='text')
     # We set new spike and weight monitors 
     MPe_All = b2.SpikeMonitor(Pe)
     MPi_All = b2.SpikeMonitor(Pi)
     W_IE = b2.StateMonitor(con_ie, 'w', record=True,dt=0.1*second)
     W_EE = b2.StateMonitor(con_ee, 'w', record=True,dt=0.1*second)
-    b2.run(150 * second)
+    b2.run(150 * second, report='text')
     results[1] = {'start' : 70,
                   'end' : 220,
                   'ee_times' : list(MPe_All.t),
@@ -171,6 +172,7 @@ def network_run(sim_params, working_directory):
 
     # we save the results as well as return them 
     save_file = working_directory / "analysis_run_raw.json"
+    logger.info(f"Saving to {save_file}")
     with open(save_file, "w") as f:
         json.dump(f, results)
     return results
