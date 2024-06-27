@@ -14,11 +14,12 @@ from matplotlib.colors import Normalize
 from matplotlib import cm
 from network_analysis import network_run
 import json
+
 logging.basicConfig(level=logging.INFO,
                         format=f"run_simulation {HOST}(%(asctime)s) - %(levelname)s - %(message)s", datefmt="%H:%M:%S")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-
+logger.info("CALLED")
 def network_analysis(parameters, working_dir):
     results = network_run(parameters, working_dir)
 def kernel_plot(parameters, working_dir):
