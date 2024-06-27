@@ -13,5 +13,6 @@ if [ ! -d "$working_directory" ]; then
     echo "Error: Provided working directory '$working_directory' does not exist or is not a directory."
     exit 1
 fi
+echo "RUNNING"
 python_script="analysis/network_analysis.py"
 python "$python_script" --working_dir "$working_directory" "$@"
