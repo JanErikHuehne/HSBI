@@ -139,14 +139,14 @@ def network_run(sim_params, working_directory):
     b2.run(5 * second)
     # We get the information of the spike monitors
 
-    results[0] = {'start' : 10,
+      results[0] = {'start' : 10,
                   'end' : 40,
-                  'ee_times' : list(np.array(MPe_All.t)),
-                  'ee_neuron_ids':  list(np.array(MPe_All.i)),
-                  'ie_times' : list(np.array(MPi_All.t)), 
-                  'ie_neuron_ids' :list(np.array(MPi_All.i)), 
-                   'w_ee' : np.array(W_EE.w).tolist(),
-                   'w_ie' : np.array(W_IE.w).tolist()
+                  'ee_times' : list(np.array(MPe_All.t).astype(float)),
+                  'ee_neuron_ids':  list(np.array(MPe_All.i).astype(int)),
+                  'ie_times' : list(np.array(MPi_All.t).astype(int)), 
+                  'ie_neuron_ids' :list(np.array(MPi_All.i).astype(float)), 
+                   'w_ee' : np.array(W_EE.w).astype(float).tolist(),
+                   'w_ie' : np.array(W_IE.w).astype(float).tolist()
                   }
 
     # We reset the spike monitors 
@@ -161,12 +161,12 @@ def network_run(sim_params, working_directory):
     b2.run(15 * second, report='text')
     results[1] = {'start' : 10,
                   'end' : 40,
-                  'ee_times' : list(np.array(MPe_All.t)),
-                  'ee_neuron_ids':  list(np.array(MPe_All.i)),
-                  'ie_times' : list(np.array(MPi_All.t)), 
-                  'ie_neuron_ids' :list(np.array(MPi_All.i)), 
-                   'w_ee' : np.array(W_EE.w).tolist(),
-                   'w_ie' : np.array(W_IE.w).tolist()
+                  'ee_times' : list(np.array(MPe_All.t).astype(float)),
+                  'ee_neuron_ids':  list(np.array(MPe_All.i).astype(int)),
+                  'ie_times' : list(np.array(MPi_All.t).astype(int)), 
+                  'ie_neuron_ids' :list(np.array(MPi_All.i).astype(float)), 
+                   'w_ee' : np.array(W_EE.w).astype(float).tolist(),
+                   'w_ie' : np.array(W_IE.w).astype(float).tolist()
                   }
     # We get the information of the spike monitors
 
