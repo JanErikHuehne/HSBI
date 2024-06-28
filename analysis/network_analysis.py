@@ -141,10 +141,10 @@ def network_run(sim_params, working_directory):
 
     results[0] = {'start' : 10,
                   'end' : 40,
-                  'ee_times' : list(np.array(MPe_All.t).astype(float)),
-                  'ee_neuron_ids':  list(np.array(MPe_All.i).astype(int)),
-                  'ie_times' : list(np.array(MPi_All.t).astype(int)), 
-                  'ie_neuron_ids' :list(np.array(MPi_All.i).astype(float)), 
+                  'ee_times' : list(np.array(MPe_All.t, dtype=float)),
+                  'ee_neuron_ids':  list(np.array(MPe_All.i, dtype=int)),
+                  'ie_times' : list(np.array(MPi_All.t, dtype=float)), 
+                  'ie_neuron_ids' :list(np.array(MPi_All.i).astype(int)), 
                    'w_ee' : np.array(W_EE.w).astype(float).tolist(),
                    'w_ie' : np.array(W_IE.w).astype(float).tolist()
                   }
@@ -163,8 +163,8 @@ def network_run(sim_params, working_directory):
                   'end' : 40,
                   'ee_times' : list(np.array(MPe_All.t).astype(float)),
                   'ee_neuron_ids':  list(np.array(MPe_All.i).astype(int)),
-                  'ie_times' : list(np.array(MPi_All.t).astype(int)), 
-                  'ie_neuron_ids' :list(np.array(MPi_All.i).astype(float)), 
+                  'ie_times' : list(np.array(MPi_All.t).astype(float)), 
+                  'ie_neuron_ids' :list(np.array(MPi_All.i).astype(int)), 
                    'w_ee' : np.array(W_EE.w).astype(float).tolist(),
                    'w_ie' : np.array(W_IE.w).astype(float).tolist()
                   }
