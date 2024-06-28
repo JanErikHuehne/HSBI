@@ -174,7 +174,7 @@ def network_run(sim_params, working_directory):
     save_file = working_directory / "analysis_run_raw.json"
     logger.info(f"Saving to {save_file}")
     with open(save_file, "w") as f:
-        json.dump(f, results)
+        json.dump(results, f)
     return results
  
 
