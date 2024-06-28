@@ -137,10 +137,8 @@ def network_run(sim_params, working_directory):
     MPi_All = b2.SpikeMonitor(Pi)
     W_IE = b2.StateMonitor(con_ie, 'w', record=True, dt=0.1 * second)
     W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=0.1 * second)
-    b2.run(5 * second)
+    b2.run(30 * second, report='text')
     # We get the information of the spike monitors
-    print(type(np.array(MPe_All.t / second, dtype=float).tolist()[0]))
-    print(type(np.array(MPe_All.i / second, dtype=int).tolist()[0]))
     results[0] = {
         'start': 10,
         'end': 40,
@@ -155,13 +153,13 @@ def network_run(sim_params, working_directory):
     # We reset the spike monitors 
     del MPe_All, MPi_All, W_IE, W_EE
     # we run without monitoring
-    b2.run(5 * second, report='text')
+    b2.run(30 * second, report='text')
     # We set new spike and weight monitors 
     MPe_All = b2.SpikeMonitor(Pe)
     MPi_All = b2.SpikeMonitor(Pi)
     W_IE = b2.StateMonitor(con_ie, 'w', record=True, dt=0.1 * second)
     W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=0.1 * second)
-    b2.run(15 * second, report='text')
+    b2.run(120 * second, report='text')
     results[1] = {
         'start': 10,
         'end': 40,
