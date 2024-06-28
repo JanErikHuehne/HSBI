@@ -139,7 +139,7 @@ def network_run(sim_params, working_directory):
     b2.run(5 * second)
     # We get the information of the spike monitors
 
-      results[0] = {'start' : 10,
+    results[0] = {'start' : 10,
                   'end' : 40,
                   'ee_times' : list(np.array(MPe_All.t).astype(float)),
                   'ee_neuron_ids':  list(np.array(MPe_All.i).astype(int)),
