@@ -139,8 +139,8 @@ def network_run(sim_params, working_directory):
     W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=0.1 * second)
     b2.run(5 * second)
     # We get the information of the spike monitors
-    print(np.array(MPe_All.t / second, dtype=float).dtype)
-    print(np.array(MPe_All.i / second, dtype=int).dtype)
+    print(type(np.array(MPe_All.t / second, dtype=float).tolist()[0]))
+    print(type(np.array(MPe_All.i / second, dtype=int).tolist()[0]))
     print(np.array(W_EE.w, dtype=float))
     print(np.array(W_IE.w, dtype=float))
     results[0] = {
