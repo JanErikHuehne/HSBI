@@ -141,15 +141,13 @@ def network_run(sim_params, working_directory):
     # We get the information of the spike monitors
     print(type(np.array(MPe_All.t / second, dtype=float).tolist()[0]))
     print(type(np.array(MPe_All.i / second, dtype=int).tolist()[0]))
-    print(np.array(W_EE.w, dtype=float))
-    print(np.array(W_IE.w, dtype=float))
     results[0] = {
         'start': 10,
         'end': 40,
-        'ee_times': list(np.array(MPe_All.t / second, dtype=float)),  # Convert times to seconds
-        'ee_neuron_ids': list(np.array(MPe_All.i, dtype=int)),
-        'ie_times': list(np.array(MPi_All.t / second, dtype=float)),  # Convert times to seconds
-        'ie_neuron_ids': list(np.array(MPi_All.i, dtype=int)),
+        'ee_times': np.array(MPe_All.t / second, dtype=float).tolist(),  # Convert times to seconds
+        'ee_neuron_ids': np.array(MPe_All.i, dtype=int).tolist(),
+        'ie_times': np.array(MPi_All.t / second, dtype=float).tolist(),  # Convert times to seconds
+        'ie_neuron_ids': np.array(MPi_All.i, dtype=int).tolist(),
         'w_ee': np.array(W_EE.w, dtype=float).tolist(),
         'w_ie': np.array(W_IE.w, dtype=float).tolist()
     }
@@ -167,10 +165,10 @@ def network_run(sim_params, working_directory):
     results[1] = {
         'start': 10,
         'end': 40,
-        'ee_times': list(np.array(MPe_All.t / second, dtype=float)),  # Convert times to seconds
-        'ee_neuron_ids': list(np.array(MPe_All.i, dtype=int)),
-        'ie_times': list(np.array(MPi_All.t / second, dtype=float)),  # Convert times to seconds
-        'ie_neuron_ids': list(np.array(MPi_All.i, dtype=int)),
+        'ee_times': np.array(MPe_All.t / second, dtype=float).tolist(),  # Convert times to seconds
+        'ee_neuron_ids': np.array(MPe_All.i, dtype=int).tolist(),
+        'ie_times': np.array(MPi_All.t / second, dtype=float).tolist(),  # Convert times to seconds
+        'ie_neuron_ids': np.array(MPi_All.i, dtype=int).tolist(),
         'w_ee': np.array(W_EE.w, dtype=float).tolist(),
         'w_ie': np.array(W_IE.w, dtype=float).tolist()
     }
