@@ -37,8 +37,6 @@ while true; do
     # Convert memory usage to MB
     MEM_USAGE_MB=$((MEM_USAGE / 1024))
 
-    echo "Memory usage of process (PID $PID): $MEM_USAGE_MB MB"
-
     # Check if memory usage exceeds the limit
     if [ $MEM_USAGE_MB -gt $MEMORY_LIMIT ]; then
         echo "Memory usage of process (PID $PID) exceeds $MEMORY_LIMIT MB, terminating process"
