@@ -391,8 +391,8 @@ def simulation(sim_params, run_id, seed=None):
     # Define monitors
     MPe = b2.SpikeMonitor(Pe)
     MPi = b2.SpikeMonitor(Pi)
-    W_IE = b2.StateMonitor(con_ie, 'w', record=True)
-    W_EE = b2.StateMonitor(con_ee, 'w', record=True)
+    W_IE = b2.StateMonitor(con_ie, 'w', record=True, dt=0.5 * second)
+    W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=0.5 * second)
     b2.run(5 * second)
     # Result retrieval
     spikes = {}
