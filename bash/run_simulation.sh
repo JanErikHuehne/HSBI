@@ -18,7 +18,7 @@ python_script="parallel_python/run_simulation.py"
 python "$python_script" --working_dir "$working_directory" "$@" &
 PID=$!
 
-hile true; do
+while true; do
     # Check if the process is still running
     if ! kill -0 $PID 2>/dev/null; then
         echo "Process $PID has terminated"
