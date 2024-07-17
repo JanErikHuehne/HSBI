@@ -178,7 +178,11 @@ if __name__ == '__main__':
     plot_dir.mkdir(parents=True, exist_ok=True)
     ############################
     logger.info("Running network")
-    network_analysis(sim_parameters, plot_dir)
+    valid = network_analysis(sim_parameters, plot_dir)
+    if not valid:
+        plot_dir.rmdir()
+        logger.info("Run results not valid - terminating this run ...")
+        exit(0)
     ############################
     logger.info("Creating kernel plot")
     kernel_plot(sim_parameters, plot_dir)
@@ -201,4 +205,4 @@ if __name__ == '__main__':
                   'ie_factor' : sim_parameters[11],
                   }
     with open(meta_file, "w") as f:
-        json.dump(f, meta_dict)
+        json.dump(meta_dict, f)
