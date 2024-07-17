@@ -179,8 +179,11 @@ if __name__ == '__main__':
     ############################
     logger.info("Running network")
     valid = network_analysis(sim_parameters, plot_dir)
-    if not valid:
-        plot_dir.rmdir()
+    if valid == False:
+        try:
+            plot_dir.rmdir()
+        except Exception:
+            pass
         logger.info("Run results not valid - terminating this run ...")
         exit(0)
     ############################
