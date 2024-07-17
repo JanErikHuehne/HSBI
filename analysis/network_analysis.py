@@ -8,7 +8,8 @@ import numpy as np
 
 import json
 from pathlib import Path
-
+import warnings
+warnings.filterwarnings("error")
 
 logging.basicConfig(level=logging.INFO,
                     format=f"run_simulation {HOST}(%(asctime)s) - %(levelname)s - %(message)s", datefmt="%H:%M:%S")
@@ -129,13 +130,16 @@ def network_run(sim_params, working_directory):
     P = b2.PoissonGroup(input_num, input_freq * Hz)
     S = b2.PoissonInput(Pe, N=input_num, target_var="g_ampa", rate=20 * Hz, weight=0.4 * nS)
     results = {}
-
-    b2.run(10 * second, report='text')
+    try:
+        b2.run(10 * second, report='text')
+    except RuntimeWarning:
+            logger.info("Runtime Warning found. Terminating this run ...")
+            return False
     # First Recording Window
     MPe_All = b2.SpikeMonitor(Pe)
     MPi_All = b2.SpikeMonitor(Pi)
-    W_IE = b2.StateMonitor(con_ie, 'w', record=True, dt=0.1 * second)
-    W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=0.1 * second)
+    W_IE = b2.StateMonitor(con_ie, 'w', record=True, dt=0.5 * second)
+    W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=0.5 * second)
     b2.run(30 * second, report='text')
     # We get the information of the spike monitors
     results[0] = {
@@ -159,8 +163,8 @@ def network_run(sim_params, working_directory):
     # We set new spike and weight monitors 
     MPe_All = b2.SpikeMonitor(Pe)
     MPi_All = b2.SpikeMonitor(Pi)
-    W_IE = b2.StateMonitor(con_ie, 'w', record=True, dt=0.1 * second)
-    W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=0.1 * second)
+    W_IE = b2.StateMonitor(con_ie, 'w', record=True, dt=0.5 * second)
+    W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=0.5 * second)
     b2.run(120 * second, report='text')
     results[1] = {
         'start': 10,
