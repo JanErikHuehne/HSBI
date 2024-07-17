@@ -152,9 +152,13 @@ def network_run(sim_params, working_directory):
         'w_ee': np.array(W_EE.w, dtype=float).tolist(),
         'w_ie': np.array(W_IE.w, dtype=float).tolist()
     }
-    if np.array(results[0]['w_ee'][-1]).mean(axis=0) < 0.1:
+    if np.array(results[1]['w_ee'][-1]).mean(axis=0) < 0.1:
         return False
-    elif np.array(results[0]['w_ie'][-1]).mean(axis=0) < 0.05:
+    elif np.array(results[1]['w_ie'][-1]).mean(axis=0) < 0.05:
+        return False
+    elif np.array(results[1]['w_ee'][-1]).mean(axis=0) > 5:
+        return False
+    elif np.array(results[1]['w_ie'][-1]).mean(axis=0) > 10:
         return False
     # We reset the spike monitors 
     del MPe_All, MPi_All, W_IE, W_EE
@@ -179,6 +183,10 @@ def network_run(sim_params, working_directory):
     if np.array(results[1]['w_ee'][-1]).mean(axis=0) < 0.1:
         return False
     elif np.array(results[1]['w_ie'][-1]).mean(axis=0) < 0.05:
+        return False
+    elif np.array(results[1]['w_ee'][-1]).mean(axis=0) > 5:
+        return False
+    elif np.array(results[1]['w_ie'][-1]).mean(axis=0) > 10:
         return False
     # We get the information of the spike monitors
 
