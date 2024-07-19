@@ -1,5 +1,3 @@
-import warnings
-warnings.filterwarnings("error")
 import socket
 HOST = socket.gethostname()
 import argparse
@@ -393,7 +391,7 @@ def simulation(sim_params, run_id, seed=None):
     W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=10 * second)
     try:
         b2.run(20 * second)
-    except Exception:
+    except RuntimeWarning:
         logger.info("Unvalid run - terminating ")
     last_ee =  np.array(W_EE.w, dtype=float)[:, -1]
     last_ie =  np.array(W_IE.w, dtype=float)[:, -1]
