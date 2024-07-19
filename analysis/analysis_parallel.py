@@ -22,6 +22,7 @@ logger.setLevel(logging.INFO)
 logger.info("CALLED")
 def network_analysis(parameters, working_dir):
     results = network_run(parameters, working_dir)
+    return results
 def kernel_plot(sim_parameters, working_dir):
     """This function is creating the kernel plot of the plasticity rule
 
