@@ -131,7 +131,7 @@ def network_run(sim_params, working_directory):
     results = {}
     try:
         b2.run(10 * second, report='text')
-    except RuntimeWarning:
+    except Exception:
             logger.info("Runtime Warning found. Terminating this run ...")
             return False
     # First Recording Window
