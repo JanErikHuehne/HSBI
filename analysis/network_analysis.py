@@ -30,7 +30,6 @@ def time_function(func):
     return wrapper
 
 
-@time_function
 def network_run(sim_params, working_directory):
     logger.info(f"Running in {working_directory}")
     b2.start_scope()
