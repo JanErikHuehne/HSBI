@@ -184,8 +184,9 @@ if __name__ == '__main__':
             plot_dir.rmdir()
         except Exception:
             pass
-        logger.info("Run results not valid - terminating this run ...")
-        exit(0)
+        finally:
+            logger.info("Run results not valid - terminating this run ...")
+            exit(0)
     ############################
     logger.info("Creating kernel plot")
     kernel_plot(sim_parameters, plot_dir)
