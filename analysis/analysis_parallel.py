@@ -181,12 +181,15 @@ if __name__ == '__main__':
     valid = network_analysis(sim_parameters, plot_dir)
     if valid == False:
         try:
+            logger.info("UNVALID RUN")
             plot_dir.rmdir()
         except Exception:
             pass
         finally:
             logger.info("Run results not valid - terminating this run ...")
             exit(0)
+    else: 
+        logger.info("VALID RUN")
     ############################
     logger.info("Creating kernel plot")
     kernel_plot(sim_parameters, plot_dir)
