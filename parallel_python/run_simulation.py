@@ -293,7 +293,7 @@ def simulation(sim_params, run_id, seed=None):
     NI = NE / 4
     input_num = 40
     input_freq = 30 # Hz
-    sim_time = 25
+    sim_time = 20
     gmax = 20.0
     lr = 1e-2 
     Aminus = 1.0
@@ -387,13 +387,67 @@ def simulation(sim_params, run_id, seed=None):
     P = b2.PoissonGroup(input_num, input_freq*Hz)
     # We only input to the exitatory population 
     S = b2.PoissonInput(Pe, N=input_num, target_var="g_ampa", rate=20*Hz, weight=0.4*nS)
-    b2.run(sim_time * second)
+    W_IE = b2.StateMonitor(con_ie, 'w', record=True, dt=50 * second)
+    W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=50 * second)
+    b2.run(20 * second)
+    last_ee =  np.array(W_EE.w, dtype=float)[-1]
+    last_ie =  np.array(W_IE.w, dtype=float)[-1]
+    if  (np.sum(last_ee[last_ee >= 16.0]) / len(last_ee)) > 0.05 or (np.sum(last_ie[last_ie >= 16.0]) / len(last_ie)) > 0.05:
+        exit(0)
+    elif  (np.sum(last_ee[last_ee <= 0.1]) / len(last_ee)) > 0.1 or (np.sum(last_ie[last_ie <= 0.1]) / len(last_ie)) > 0.1:
+        exit(0)
+    del W_IE
+    del W_EE
+    W_IE = b2.StateMonitor(con_ie, 'w', record=True, dt=50 * second)
+    W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=50 * second)
+    b2.run(20 * second)
+    last_ee =  np.array(W_EE.w, dtype=float)[-1]
+    last_ie =  np.array(W_IE.w, dtype=float)[-1]
+    if  (np.sum(last_ee[last_ee >= 16.0]) / len(last_ee)) > 0.05 or (np.sum(last_ie[last_ie >= 16.0]) / len(last_ie)) > 0.05:
+        exit(0)
+    elif  (np.sum(last_ee[last_ee <= 0.1]) / len(last_ee)) > 0.1 or (np.sum(last_ie[last_ie <= 0.1]) / len(last_ie)) > 0.1:
+        exit(0)
+    del W_IE
+    del W_EE
+    W_IE = b2.StateMonitor(con_ie, 'w', record=True, dt=50 * second)
+    W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=50 * second)
+    b2.run(20 * second)
+    last_ee =  np.array(W_EE.w, dtype=float)[-1]
+    last_ie =  np.array(W_IE.w, dtype=float)[-1]
+    if  (np.sum(last_ee[last_ee >= 16.0]) / len(last_ee)) > 0.05 or (np.sum(last_ie[last_ie >= 16.0]) / len(last_ie)) > 0.05:
+        exit(0)
+    elif  (np.sum(last_ee[last_ee <= 0.1]) / len(last_ee)) > 0.1 or (np.sum(last_ie[last_ie <= 0.1]) / len(last_ie)) > 0.1:
+        exit(0)
+    del W_IE
+    del W_EE
+    W_IE = b2.StateMonitor(con_ie, 'w', record=True, dt=50 * second)
+    W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=50 * second)
+    b2.run(20 * second)
+    last_ee =  np.array(W_EE.w, dtype=float)[-1]
+    last_ie =  np.array(W_IE.w, dtype=float)[-1]
+    if  (np.sum(last_ee[last_ee >= 16.0]) / len(last_ee)) > 0.05 or (np.sum(last_ie[last_ie >= 16.0]) / len(last_ie)) > 0.05:
+        exit(0)
+    elif  (np.sum(last_ee[last_ee <= 0.1]) / len(last_ee)) > 0.1 or (np.sum(last_ie[last_ie <= 0.1]) / len(last_ie)) > 0.1:
+        exit(0)
+    del W_IE
+    del W_EE
+    W_IE = b2.StateMonitor(con_ie, 'w', record=True, dt=50 * second)
+    W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=50 * second)
+    b2.run(20 * second)
+    last_ee =  np.array(W_EE.w, dtype=float)[-1]
+    last_ie =  np.array(W_IE.w, dtype=float)[-1]
+    if  (np.sum(last_ee[last_ee >= 16.0]) / len(last_ee)) > 0.05 or (np.sum(last_ie[last_ie >= 16.0]) / len(last_ie)) > 0.05:
+        exit(0)
+    elif  (np.sum(last_ee[last_ee <= 0.1]) / len(last_ee)) > 0.1 or (np.sum(last_ie[last_ie <= 0.1]) / len(last_ie)) > 0.1:
+        exit(0)
+    del W_IE
+    del W_EE
     # Define monitors
     MPe = b2.SpikeMonitor(Pe)
     MPi = b2.SpikeMonitor(Pi)
-    W_IE = b2.StateMonitor(con_ie, 'w', record=True, dt=0.5 * second)
-    W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=0.5 * second)
-    b2.run(5 * second)
+    W_IE = b2.StateMonitor(con_ie, 'w', record=True, dt=2 * second)
+    W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=2 * second)
+    b2.run(sim_time * second)
     # Result retrieval
     spikes = {}
     times = MPe.t
