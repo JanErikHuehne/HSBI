@@ -179,6 +179,7 @@ if __name__ == '__main__':
     ############################
     logger.info("Running network")
     valid = network_analysis(sim_parameters, plot_dir)
+    logger.info(valid)
     if valid == False:
         try:
             logger.info("UNVALID RUN")
