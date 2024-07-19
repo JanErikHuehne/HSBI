@@ -79,7 +79,7 @@ def network_run(sim_params, working_directory):
                                 g_ampa += w*nS
                                 ee_trace_pre_plus += 1.0
                                 ee_trace_pre_minus += 1.0
-                                w = clip(w + lr * factor_ee * (ee_alpha_pre + ee_Aplus*ee_trace_post_plus + ee_Aminus * ee_trace_post_minus), 0, gmax)
+                                w = clip(w + lr * (ee_alpha_pre + factor_ee*ee_Aplus*ee_trace_post_plus + factor_ee*ee_Aminus * ee_trace_post_minus), 0, gmax)
                                 ''',
                          on_post='''
                                 ee_trace_post_plus += 1
@@ -115,7 +115,7 @@ def network_run(sim_params, working_directory):
                                 g_gaba += w*nS
                                 ie_trace_pre_plus += 1.0
                                 ie_trace_pre_minus += 1.0
-                                w = clip(w + lr * factor_ie * (ie_alpha_pre + ie_Aplus * ie_trace_post_plus + ie_Aminus * ie_trace_post_minus), 0, gmax)
+                                w = clip(w + lr * (ie_alpha_pre + factor_ie*ie_Aplus * ie_trace_post_plus + factor_ie*ie_Aminus * ie_trace_post_minus), 0, gmax)
                                 ''',
                          on_post='''
                                 ie_trace_post_plus += 1

@@ -50,7 +50,7 @@ def kernel_plot(sim_parameters, working_dir):
         on_pre = '''
          trace_pre_plus += 1.0
          trace_pre_minus += 1.0
-         w = clip(w + lr * factor * (alpha_pre + Aplus * trace_post_plus + Aminus * trace_post_minus), 0, gmax)
+         w = clip(w + lr  * (alpha_pre + factor*Aplus * trace_post_plus + factor*Aminus * trace_post_minus), 0, gmax)
          '''
         on_post = '''
                 trace_post_plus += 1
