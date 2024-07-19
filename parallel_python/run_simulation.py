@@ -1,3 +1,5 @@
+import warnings
+warnings.filterwarnings("error")
 import socket
 HOST = socket.gethostname()
 import argparse
@@ -389,8 +391,10 @@ def simulation(sim_params, run_id, seed=None):
     S = b2.PoissonInput(Pe, N=input_num, target_var="g_ampa", rate=20*Hz, weight=0.4*nS)
     W_IE = b2.StateMonitor(con_ie, 'w', record=True, dt=10 * second)
     W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=10 * second)
-    b2.run(20 * second)
-  
+    try:
+        b2.run(20 * second)
+    except Exception:
+        logger.info("Unvalid run - terminating ")
     last_ee =  np.array(W_EE.w, dtype=float)[:, -1]
     last_ie =  np.array(W_IE.w, dtype=float)[:, -1]
 
