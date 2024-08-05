@@ -290,78 +290,77 @@ def simulation(sim_params, run_id, seed=None):
     b2.seed(seed)
     """Shared network parameters"""
     NE = 400
-    NI = NE / 4
+    NI = NE // 4
     input_num = 40
     input_freq = 30 # Hz
-    sim_time = 20
+    sim_time = 120
     gmax = 20.0
     lr = 1e-2 
     Aminus = 1.0
-    epsilon = 0.2
+    epsilon = 0.01
     gl = 10 * nS
     er = -80 * mV
     el = - 60 * mV
-    tau_gaba = 10.0 *ms
+    tau_gaba = 10.0 * ms
     tau_ampa = 5.0 * ms
     vt = -50 * mV
     memc = 200 * pfarad
-    eqs_neurons='''
+    eqs_neurons = '''
                 dv/dt=(-gl*(v-el)-(g_ampa*v+g_gaba*(v-er)))/memc : volt (unless refractory)
                 dg_ampa/dt = -g_ampa/tau_ampa : siemens
                 dg_gaba/dt = -g_gaba/tau_gaba : siemens
                 '''
-    neurons = b2.NeuronGroup(NE+NI, model=eqs_neurons, threshold='v > vt',
+    neurons = b2.NeuronGroup(NE + NI, model=eqs_neurons, threshold='v > vt',
                              reset='v=el', refractory=5*ms, method='euler')
+    neurons.v = el
     Pe = neurons[:NE]
     Pi = neurons[NE:]
-
     # EE plasticity 
-    ee_alpha_pre = sim_params[0]
-    ee_alpha_post = sim_params[1]
-    ee_Aplus = sim_params[2]
-    ee_tauplus_stdp = sim_params[3] * ms
-    ee_tauminus_stdp = sim_params[4] * ms
-    factor_ee =sim_params[5]
+    ee_alpha_pre = sim_params["ee_alpha_pre"]
+    ee_alpha_post = sim_params["ee_alpha_post"]
+    ee_Aplus = sim_params["ee_aplus"]
+    ee_tauplus_stdp = sim_params["ee_tplus"] * ms
+    ee_tauminus_stdp =sim_params["ee_tminus"] * ms
+    factor_ee = sim_params["ee_factor"]
     ee_Aminus = -1.0
   
-    synapse_model ='''
+    synapse_model = '''
                 w : 1
                 dee_trace_pre_plus/dt = -ee_trace_pre_plus / ee_tauplus_stdp : 1 (event-driven)
                 dee_trace_pre_minus/dt = -ee_trace_pre_minus / ee_tauminus_stdp : 1 (event-driven)
                 dee_trace_post_plus/dt = -ee_trace_post_plus / ee_tauplus_stdp : 1 (event-driven)
                 dee_trace_post_minus/dt = -ee_trace_post_minus / ee_tauminus_stdp : 1 (event-driven)
-    '''
+                '''
     con_ee = b2.Synapses(Pe, Pe, model=synapse_model,
-                                on_pre='''
-                                        g_ampa += w*nS
-                                        ee_trace_pre_plus += 1.0
-                                        ee_trace_pre_minus += 1.0
-                                        w = clip(w + lr  * (ee_alpha_pre + ee_Aplus*ee_trace_post_plus + ee_Aminus * ee_trace_post_minus), 0, gmax)
-                                        ''',
-                                on_post='''
-                                        ee_trace_post_plus += 1
-                                        ee_trace_post_minus += 1
-                                        w = clip(w + lr * (ee_alpha_post + ee_Aplus*ee_trace_pre_plus + ee_Aminus * ee_trace_pre_minus), 0, gmax)
-                                        '''
-                                )
-    con_ee.connect(p=epsilon, condition='i != j')
-    con_ee.w = 0.2
+                         on_pre='''
+                                g_ampa += w*nS
+                                ee_trace_pre_plus += 1.0
+                                ee_trace_pre_minus += 1.0
+                                w = clip(w + lr * (ee_alpha_pre + factor_ee*ee_Aplus*ee_trace_post_plus + factor_ee*ee_Aminus * ee_trace_post_minus), 0, gmax)
+                                ''',
+                         on_post='''
+                                ee_trace_post_plus += 1
+                                ee_trace_post_minus += 1
+                                w = clip(w + lr * (ee_alpha_post + ee_Aplus*ee_trace_pre_plus + ee_Aminus * ee_trace_pre_minus), 0, gmax)
+                                '''
+                         )
+    
+  
     # EI Plasticity
-    con_ei = b2.Synapses(Pe, Pi, on_pre="g_ampa += 0.2*nS")
-    con_ei.connect(p=epsilon,  condition='i != j')
-   
-    #  II Plasticity
-    con_ii = b2.Synapses(Pi,Pi, on_pre="g_gaba += 1*nS")
-    con_ii.connect(p=epsilon,  condition='i != j')
-    # IE Plasiticty 
-    ie_alpha_pre = sim_params[6]
-    ie_alpha_post = sim_params[7]
-    ie_Aplus =  sim_params[8]
-    ie_tauplus_stdp = sim_params[9] * ms
-    ie_tauminus_stdp = sim_params[10] * ms
-    factor_ie =sim_params[11]
+    con_ei = b2.Synapses(Pe, Pi, model='w : 1', on_pre="g_ampa += w*nS")
+    # II Plasticity
+    con_ii = b2.Synapses(Pi, Pi, model='w : 1', on_pre="g_gaba += w*nS")
+    # IE Plasticity 
+    ie_alpha_pre = sim_params["ie_alpha_pre"]
+    ie_alpha_post = sim_params["ie_alpha_post"]
+    ie_Aplus = sim_params["ie_aplus"]
+    ie_tauplus_stdp = sim_params["ie_tplus"] * ms
+    ie_tauminus_stdp =  sim_params["ie_tminus"] * ms
+    factor_ie =  sim_params["ie_factor"]
     ie_Aminus = -1.0
-    synapse_model ='''
+
+   
+    synapse_model = '''
                 w : 1
                 die_trace_pre_plus/dt = -ie_trace_pre_plus / ie_tauplus_stdp : 1 (event-driven)
                 die_trace_pre_minus/dt = -ie_trace_pre_minus / ie_tauminus_stdp : 1 (event-driven)
@@ -369,99 +368,43 @@ def simulation(sim_params, run_id, seed=None):
                 die_trace_post_minus/dt = -ie_trace_post_minus / ie_tauminus_stdp : 1 (event-driven)
                 '''
     con_ie = b2.Synapses(Pi, Pe, model=synapse_model,
-                                on_pre='''
-                                        g_gaba += w*nS
-                                        ie_trace_pre_plus += 1.0
-                                        ie_trace_pre_minus += 1.0
-                                        w = clip(w + lr *  (ie_alpha_pre + ie_Aplus * ie_trace_post_plus + ie_Aminus * ie_trace_post_minus), 0, gmax)
-                                        ''',
-                                on_post='''
-                                        ie_trace_post_plus += 1
-                                        ie_trace_post_minus += 1
-                                        w = clip(w + lr * (ie_alpha_post + ie_Aplus * ie_trace_pre_plus + ie_Aminus * ie_trace_pre_minus), 0, gmax)
-                                        '''
-                        )
-    con_ie.connect(p=epsilon, condition='i != j')
-    con_ie.w = 1.0
-    neurons.v = 0
-    P = b2.PoissonGroup(input_num, input_freq*Hz)
-    # We only input to the exitatory population 
-    S = b2.PoissonInput(Pe, N=input_num, target_var="g_ampa", rate=20*Hz, weight=0.4*nS)
-    W_IE = b2.StateMonitor(con_ie, 'w', record=True, dt=10 * second)
-    W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=10 * second)
-    try:
-        b2.run(20 * second)
-    except RuntimeWarning:
-        logger.info("Unvalid run - terminating ")
-    last_ee =  np.array(W_EE.w, dtype=float)[:, -1]
-    last_ie =  np.array(W_IE.w, dtype=float)[:, -1]
-
-    if  (np.sum(last_ee[last_ee >= 16.0]) / len(last_ee)) > 0.05 or (np.sum(last_ie[last_ie >= 16.0]) / len(last_ie)) > 0.05:
-        logger.info("Aborting after 20s - Detecting too high EE or IE weights")
-        exit(0)
-    elif  (np.sum(last_ee[last_ee <= 0.1]) / len(last_ee)) > 0.1 or (np.sum(last_ie[last_ie <= 0.1]) / len(last_ie)) > 0.1:
-        logger.info("Aborting after 20 s- Detecting too low EE or IE weights")
-        exit(0)
-    del W_IE
-    del W_EE
-    W_IE = b2.StateMonitor(con_ie, 'w', record=True, dt=10 * second)
-    W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=10 * second)
-    b2.run(20 * second)
-    last_ee =  np.array(W_EE.w, dtype=float)[:, -1]
-    last_ie =  np.array(W_IE.w, dtype=float)[:, -1]
-    if  (np.sum(last_ee[last_ee >= 16.0]) / len(last_ee)) > 0.05 or (np.sum(last_ie[last_ie >= 16.0]) / len(last_ie)) > 0.05:
-        logger.info("Aborting after 40s - Detecting too high EE or IE weights")
-        exit(0)
-    elif  (np.sum(last_ee[last_ee <= 0.1]) / len(last_ee)) > 0.1 or (np.sum(last_ie[last_ie <= 0.1]) / len(last_ie)) > 0.1:
-        logger.info("Aborting after 40s - Detecting too low EE or IE weights")
-        exit(0)
-    del W_IE
-    del W_EE
-    W_IE = b2.StateMonitor(con_ie, 'w', record=True, dt=10 * second)
-    W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=10 * second)
-    b2.run(20 * second)
-    last_ee =  np.array(W_EE.w, dtype=float)[:, -1]
-    last_ie =  np.array(W_IE.w, dtype=float)[:, -1]
-    if  (np.sum(last_ee[last_ee >= 16.0]) / len(last_ee)) > 0.05 or (np.sum(last_ie[last_ie >= 16.0]) / len(last_ie)) > 0.05:
-        logger.info("Aborting after 60s - Detecting too high EE or IE weights")
-        exit(0)
-    elif  (np.sum(last_ee[last_ee <= 0.1]) / len(last_ee)) > 0.1 or (np.sum(last_ie[last_ie <= 0.1]) / len(last_ie)) > 0.1:
-        logger.info("Aborting after 60s - Detecting too low EE or IE weights")
-        exit(0)
-    del W_IE
-    del W_EE
-    W_IE = b2.StateMonitor(con_ie, 'w', record=True, dt=10 * second)
-    W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=10 * second)
-    b2.run(20 * second)
-    last_ee =  np.array(W_EE.w, dtype=float)[:, -1]
-    last_ie =  np.array(W_IE.w, dtype=float)[:, -1]
-    if  (np.sum(last_ee[last_ee >= 16.0]) / len(last_ee)) > 0.05 or (np.sum(last_ie[last_ie >= 16.0]) / len(last_ie)) > 0.05:
-        logger.info("Aborting  after 80s - Detecting too high EE or IE weights")
-        exit(0)
-    elif  (np.sum(last_ee[last_ee <= 0.1]) / len(last_ee)) > 0.1 or (np.sum(last_ie[last_ie <= 0.1]) / len(last_ie)) > 0.1:
-        logger.info("Aborting after 80s - Detecting too high EE or IE weights")
-        exit(0)
-    del W_IE
-    del W_EE
-    W_IE = b2.StateMonitor(con_ie, 'w', record=True, dt=10 * second)
-    W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=10 * second)
-    b2.run(20 * second)
-    last_ee =  np.array(W_EE.w, dtype=float)[:, -1]
-    last_ie =  np.array(W_IE.w, dtype=float)[:, -1]
-    if  (np.sum(last_ee[last_ee >= 16.0]) / len(last_ee)) > 0.05 or (np.sum(last_ie[last_ie >= 16.0]) / len(last_ie)) > 0.05:
-        logger.info("Aborting after 100s - Detecting too high EE or IE weights")
-        exit(0)
-    elif  (np.sum(last_ee[last_ee <= 0.1]) / len(last_ee)) > 0.1 or (np.sum(last_ie[last_ie <= 0.1]) / len(last_ie)) > 0.1:
-        logger.info("Aborting  after 100s - Detecting too high EE or IE weights")
-        exit(0)
-    del W_IE
-    del W_EE
+                         on_pre='''
+                                g_gaba += w*nS
+                                ie_trace_pre_plus += 1.0
+                                ie_trace_pre_minus += 1.0
+                                w = clip(w + lr * (ie_alpha_pre + factor_ie*ie_Aplus * ie_trace_post_plus + factor_ie*ie_Aminus * ie_trace_post_minus), 0, gmax)
+                                ''',
+                         on_post='''
+                                ie_trace_post_plus += 1
+                                ie_trace_post_minus += 1
+                                w = clip(w + lr * (ie_alpha_post + ie_Aplus * ie_trace_pre_plus + ie_Aminus * ie_trace_pre_minus), 0, gmax)
+                                '''
+                         )
+    con_ee.connect(p=epsilon*10, condition='i != j')
+    con_ei.connect(p=epsilon*10, condition='i != j')
+    con_ii.connect(p=epsilon*10, condition='i != j')
+    con_ie.connect(p=epsilon*10, condition='i != j')
+    number_ie = len(con_ie.w)
+    number_ee = len(con_ee.w)
+    number_ei = len(con_ei.w)
+    number_ii = len(con_ii.w)
+    con_ie.w = np.random.uniform(low=0.8,high=1.0, size=number_ie)
+    con_ee.w = np.random.uniform(low=0.1,high=0.2, size=number_ee)
+    con_ei.w = np.random.uniform(low=0.8,high=1.0, size=number_ei)
+    con_ii.w = np.random.uniform(low=0.4,high=0.8, size=number_ii)
+    
+    
+    # Input groups
+    P = b2.PoissonGroup(500, 30 * Hz)
+    S = b2.Synapses(P, Pe, on_pre="g_ampa += 0.4*nS")
+    S.connect(p=0.05)
+    b2.run(sim_time * second)
     # Define monitors
     MPe = b2.SpikeMonitor(Pe)
     MPi = b2.SpikeMonitor(Pi)
-    W_IE = b2.StateMonitor(con_ie, 'w', record=True, dt=5 * second)
-    W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=5 * second)
-    b2.run(sim_time * second)
+    W_IE = b2.StateMonitor(con_ie, 'w', record=True, dt=0.5 * second)
+    W_EE = b2.StateMonitor(con_ee, 'w', record=True, dt=0.5 * second)
+    b2.run(5 * second)
     # Result retrieval
     spikes = {}
     times = MPe.t
@@ -542,6 +485,12 @@ if __name__ == "__main__":
         print(f"Saving results to {file}")
         save_results(file, result)
        
+
+
+  
+
+
+   
 
 
   
