@@ -316,12 +316,12 @@ def simulation(sim_params, run_id, seed=None):
     Pe = neurons[:NE]
     Pi = neurons[NE:]
     # EE plasticity 
-    ee_alpha_pre = sim_params["ee_alpha_pre"]
-    ee_alpha_post = sim_params["ee_alpha_post"]
-    ee_Aplus = sim_params["ee_aplus"]
-    ee_tauplus_stdp = sim_params["ee_tplus"] * ms
-    ee_tauminus_stdp =sim_params["ee_tminus"] * ms
-    factor_ee = sim_params["ee_factor"]
+    ee_alpha_pre = sim_params[0]
+    ee_alpha_post = sim_params[1]
+    ee_Aplus = sim_params[2]
+    ee_tauplus_stdp = sim_params[3] * ms
+    ee_tauminus_stdp =sim_params[4] * ms
+    factor_ee = sim_params[5]
     ee_Aminus = -1.0
   
     synapse_model = '''
@@ -351,12 +351,12 @@ def simulation(sim_params, run_id, seed=None):
     # II Plasticity
     con_ii = b2.Synapses(Pi, Pi, model='w : 1', on_pre="g_gaba += w*nS")
     # IE Plasticity 
-    ie_alpha_pre = sim_params["ie_alpha_pre"]
-    ie_alpha_post = sim_params["ie_alpha_post"]
-    ie_Aplus = sim_params["ie_aplus"]
-    ie_tauplus_stdp = sim_params["ie_tplus"] * ms
-    ie_tauminus_stdp =  sim_params["ie_tminus"] * ms
-    factor_ie =  sim_params["ie_factor"]
+    ie_alpha_pre = sim_params[6]
+    ie_alpha_post = sim_params[7]
+    ie_Aplus = sim_params[8]
+    ie_tauplus_stdp = sim_params[9] * ms
+    ie_tauminus_stdp =  sim_params[10] * ms
+    factor_ie =  sim_params[11]
     ie_Aminus = -1.0
 
    
