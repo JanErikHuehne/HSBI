@@ -140,7 +140,7 @@ def metrics(result):
             # we get the maximum weight value of each trace
             max_w = np.max(weights, axis=1)
             min_w = np.max(weights, axis=1)
-            blow = np.sum(max_w > gmax)
+            blow = np.sum(max_w >= gmax)
             vanish = np.sum(min_w < 0.001)
             f_blow += (blow + vanish) / (len(max_w))
         return f_blow / 2
